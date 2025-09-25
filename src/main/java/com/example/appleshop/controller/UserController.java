@@ -29,7 +29,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Tạo user mới
     @PostMapping
     public User createUser(@RequestBody User user) {
         return userService.createUser(user);

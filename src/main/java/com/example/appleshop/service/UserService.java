@@ -1,8 +1,10 @@
 package com.example.appleshop.service;
 
 import com.example.appleshop.entity.User;
+import com.example.appleshop.repository.ProductRepository;
 import com.example.appleshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +15,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     // Lấy tất cả users
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -24,8 +27,17 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    // Tạo user mới
+    // Tạo user mới với password được hash
     public User createUser(User user) {
+        // Kiểm tra username đã tồn tại chưa
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        // Hash password
+        String encodedPassword = passwordEncoder.encode(user.getPasswordHash());
+        user.setPasswordHash(encodedPassword);
+
         return userRepository.save(user);
     }
 
