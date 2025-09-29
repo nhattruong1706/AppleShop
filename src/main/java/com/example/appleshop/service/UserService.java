@@ -1,7 +1,6 @@
 package com.example.appleshop.service;
 
-import com.example.appleshop.entity.User;
-import com.example.appleshop.repository.ProductRepository;
+import com.example.appleshop.entity.UserEntity;
 import com.example.appleshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,17 +17,17 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     // Lấy tất cả users
-    public List<User> getAllUsers() {
+    public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
 
     // Lấy user theo id
-    public Optional<User> getUserById(Long id) {
+    public Optional<UserEntity> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
     // Tạo user mới với password được hash
-    public User createUser(User user) {
+    public UserEntity createUser(UserEntity user) {
         // Kiểm tra username đã tồn tại chưa
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
@@ -42,8 +41,8 @@ public class UserService {
     }
 
     // Cập nhật user
-    public User updateUser(Long id, User userDetails) {
-        User user = userRepository.findById(id)
+    public UserEntity updateUser(Long id, UserEntity userDetails) {
+        UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));
         user.setUsername(userDetails.getUsername());
         user.setEmail(userDetails.getEmail());
@@ -56,7 +55,7 @@ public class UserService {
 
     // Xóa user
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
+        UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));
         userRepository.delete(user);
     }

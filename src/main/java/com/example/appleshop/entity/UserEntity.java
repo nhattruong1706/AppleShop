@@ -6,7 +6,7 @@ import lombok.*;
 @Table(name = "users")
 @Data
 
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // tương ứng với IDENTITY(1,1) bên SQL Server
@@ -30,7 +30,7 @@ public class User {
     @Column(name = "role")
     private String role;  // ví dụ: ADMIN, USER
 
-    public User() {
+    public UserEntity() {
 
     }
 }
