@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký người dùng</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: inline-block; width: 100px; margin-top: 5px; }
+        input, select { margin-bottom: 10px; width: 200px; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body ng-controller="RegisterController">
+
+<h2>Đăng ký tài khoản</h2>
+
+<form ng-submit="register()">
+    <label>Username:</label>
+    <input type="text" ng-model="user.username" required /><br/>
+
+    <label>Email:</label>
+    <input type="email" ng-model="user.email" required /><br/>
+
+    <label>Password:</label>
+    <input type="password" ng-model="user.passwordHash" required /><br/>
+
+    <label>Full Name:</label>
+    <input type="text" ng-model="user.fullName" required /><br/>
+
+    <label>Phone:</label>
+    <input type="text" ng-model="user.phone" required /><br/>
+
+
+    <input type="hidden" ng-model="user.role" /><br/>
+
+    <button type="submit">Đăng ký</button>
+</form>
+
+<p style="color:green">{{success}}</p>
+<p style="color:red">{{error}}</p>
+
+<!-- AngularJS script trực tiếp trong HTML -->
+<script>
+    angular.module("myApp", [])
+        .controller("RegisterController", function($scope, $http) {
+            $scope.user = {};
+            $scope.success = "";
+            $scope.error = "";
+
+            $scope.register = function() {
+                $http.post("http://localhost:8080/api/users", $scope.user)
+                    .then(function(response) {
+                        $scope.success = "Đăng ký thành công!";
+                        $scope.error = "";
+                        $scope.user = {}; // reset form
+                    }, function(error) {
+                        $scope.error = "Đăng ký thất bại: " + (error.data.message || error.statusText);
+                        $scope.success = "";
+                    });
+            };
+        });
+</script>
+
+</body>
+</html>
