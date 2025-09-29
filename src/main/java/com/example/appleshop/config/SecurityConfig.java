@@ -24,21 +24,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // REST API nên disable CSRF
+                .securityMatcher("/**") // áp dụng cho tất cả endpoint
+                .csrf(csrf -> csrf.disable()) // tắt CSRF theo cú pháp mới
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().permitAll()
-                )
-                .formLogin(form -> form.disable()) // không dùng login form mặc định
-                .httpBasic(basic -> basic.disable()) // không dùng basic auth
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessUrl("/login?logout=true")
-                        .permitAll()
+                        .anyRequest().permitAll() // cho phép tất cả
                 );
-
         return http.build();
     }
+
 
 }
