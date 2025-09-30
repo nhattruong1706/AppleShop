@@ -24,13 +24,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/**") // áp dụng cho tất cả endpoint
-                .csrf(csrf -> csrf.disable()) // tắt CSRF theo cú pháp mới
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // cho phép tất cả
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/logout",
+                                "/api/auth/me",
+                                "/dangnhap.html",
+                                "/dangki.html",
+                                "/TrangChu.html",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/dangnhap.html")  // trang login custom
+                        .permitAll()
                 );
+
         return http.build();
     }
+
+
 
 
 }
