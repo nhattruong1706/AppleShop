@@ -30,17 +30,19 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/logout",
                                 "/api/auth/me",
-                                "/dangnhap.html",
-                                "/dangki.html",
-                                "/TrangChu.html",
+                                "/html/dangnhap.html",
+                                "/html/dangki.html",
+                                "/html/TrangChu.html",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/html/index.html"
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/dangnhap.html")  // trang login custom
+                        .loginPage("/html/dangnhap.html")  // trang login custom
                         .permitAll()
                 );
 
