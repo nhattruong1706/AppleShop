@@ -1,39 +1,47 @@
 package com.example.appleshop.controller;
+
 import com.example.appleshop.entity.CartItemEntity;
 import com.example.appleshop.service.CartItemService;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
+@RequiredArgsConstructor
 public class CartController {
 
     private final CartItemService cartItemService;
 
-    public CartController(CartItemService cartItemService) {
-        this.cartItemService = cartItemService;
+    // ✅ Lấy danh sách giỏ hàng của 1 user
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<CartItemEntity>> getCart(@PathVariable Long userId) {
+        return ResponseEntity.ok(cartItemService.getCartByUserId(userId));
     }
 
-    @GetMapping("/items")
-    public List<CartItemEntity> getItems() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return cartItemService.getItemsForUser(username);
+    // ✅ Thêm sản phẩm vào giỏ
+    @PostMapping("/add")
+    public ResponseEntity<CartItemEntity> addToCart(
+            @RequestParam Long userId,
+            @RequestParam Long variantId,
+            @RequestParam int qty
+    ) {
+        return ResponseEntity.ok(cartItemService.addToCart(userId, variantId, qty));
     }
 
-    @PostMapping("/items")
-    public CartItemEntity addItem(@RequestBody Map<String,Object> body) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Long productId = Long.valueOf(body.get("productId").toString());
-        int qty = Integer.parseInt(body.get("qty").toString());
-        return cartItemService.addOrUpdateItem(username, productId, qty);
+    // ✅ Xóa 1 item khỏi giỏ
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long itemId) {
+        cartItemService.removeItem(itemId);
+        return ResponseEntity.noContent().build();
     }
 
-
-    @DeleteMapping("/items/{id}")
-    public void deleteItem(@PathVariable Long id) {
-        cartItemService.removeItem(id);
+    // ✅ Xóa toàn bộ giỏ của user
+    @DeleteMapping("/clear/{userId}")
+    public ResponseEntity<Void> clearCart(@PathVariable Long userId) {
+        cartItemService.clearCart(userId);
+        return ResponseEntity.noContent().build();
     }
 }

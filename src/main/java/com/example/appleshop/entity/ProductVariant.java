@@ -3,26 +3,29 @@ package com.example.appleshop.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Table(name = "product_variants")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "variants"})
-public class Product {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "product"})
+
+public class ProductVariant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "variant_name")
+    private String variantName;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "color")
+    private String color;
+
+    @Column(name = "storage")
+    private String storage;
 
     @Column(name = "price")
     private Double price;
@@ -33,9 +36,8 @@ public class Product {
     @Column(name = "img")
     private String img;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 }

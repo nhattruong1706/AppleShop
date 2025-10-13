@@ -1,3 +1,4 @@
+
 package com.example.appleshop.entity;
 import jakarta.persistence.*;
 import lombok.*;

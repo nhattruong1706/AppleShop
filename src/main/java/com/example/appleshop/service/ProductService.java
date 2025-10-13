@@ -1,53 +1,93 @@
 package com.example.appleshop.service;
 
 import com.example.appleshop.entity.Product;
+import com.example.appleshop.entity.ProductVariant;
 import com.example.appleshop.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.appleshop.repository.ProductVariantRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final ProductVariantRepository variantRepository;
 
-    // Lấy tất cả products
+    // =========================
+    // 🔹 CRUD cho PRODUCT
+    // =========================
+
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    // Lấy product theo id
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id = " + id));
     }
 
-    // Tạo product mới
     public Product createProduct(Product product) {
+        // Không lưu variant ở đây, chỉ lưu sản phẩm
         return productRepository.save(product);
     }
 
-    // Cập nhật product
-    public Product updateProduct(Long id, Product productDetails) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
+    public Product updateProduct(Long id, Product updatedProduct) {
+        Product existing = getProductById(id);
 
-        product.setName(productDetails.getName());
-        product.setDescription(productDetails.getDescription());
-        product.setPrice(productDetails.getPrice());
-        product.setStock(productDetails.getStock());
-        product.setImg(productDetails.getImg());
-        product.setCategory(productDetails.getCategory());
+        existing.setName(updatedProduct.getName());
+        existing.setDescription(updatedProduct.getDescription());
+        existing.setPrice(updatedProduct.getPrice());
+        existing.setStock(updatedProduct.getStock());
+        existing.setImg(updatedProduct.getImg());
+        existing.setCategory(updatedProduct.getCategory());
 
-        return productRepository.save(product);
+        return productRepository.save(existing);
     }
 
-    // Xóa product
     public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
-        productRepository.delete(product);
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Không tồn tại sản phẩm với id = " + id);
+        }
+        productRepository.deleteById(id);
+    }
+
+    // =========================
+    // 🔹 CRUD cho PRODUCT VARIANT
+    // =========================
+
+    public ProductVariant addVariant(Long productId, ProductVariant variant) {
+        Product product = getProductById(productId);
+        variant.setProduct(product);
+        return variantRepository.save(variant);
+    }
+
+    public List<ProductVariant> getVariantsByProduct(Long productId) {
+        // Kiểm tra product có tồn tại không
+        getProductById(productId);
+        return variantRepository.findByProductId(productId);
+    }
+
+    public ProductVariant updateVariant(Long id, ProductVariant updatedVariant) {
+        ProductVariant existing = variantRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với id = " + id));
+
+        existing.setVariantName(updatedVariant.getVariantName());
+        existing.setColor(updatedVariant.getColor());
+        existing.setStorage(updatedVariant.getStorage());
+        existing.setPrice(updatedVariant.getPrice());
+        existing.setStock(updatedVariant.getStock());
+        existing.setImg(updatedVariant.getImg());
+
+        return variantRepository.save(existing);
+    }
+
+    public void deleteVariant(Long variantId) {
+        if (!variantRepository.existsById(variantId)) {
+            throw new RuntimeException("Không tồn tại biến thể với id = " + variantId);
+        }
+        variantRepository.deleteById(variantId);
     }
 }

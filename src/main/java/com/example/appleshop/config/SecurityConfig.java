@@ -36,9 +36,12 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/html/index.html"
+                                "/html/index.html",
+                                "/html/verify.html"
 
                         ).permitAll()
+                        // 🔒 Chặn tất cả các file HTML còn lại
+                        .requestMatchers("/html/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

@@ -9,7 +9,7 @@
     <style>
         body { background: linear-gradient(#0f1724, #111827); color:#fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial; padding:40px 0; }
         .site-container { max-width:1200px; margin:0 auto; }
-        .hero { display:flex; gap:30px; align-items:center; margin-bottom:30px; }
+        .hero { display:flex; gap:30px; align-items:center; margin-bottom:30px; flex-wrap:wrap; }
         .hero-card { flex:1; background: linear-gradient(135deg,#0b1220, #0b2b4a); border-radius:18px; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.6); }
         .hero-card h1 { font-size:2.4rem; margin-bottom:10px; color:#fff; }
         .search-input { max-width:420px; }
@@ -21,11 +21,26 @@
         .btn-apple { background:#111; color:#fff; border-radius:10px; padding:10px 14px; border:1px solid rgba(255,255,255,0.06); }
         .cart-badge { background:#ff6b6b; color:#fff; padding:4px 8px; border-radius:12px; font-weight:700; }
         .category-active { background: linear-gradient(90deg,#0ea5e9,#0ea5e9); color:#012; border-radius:999px; padding:6px 12px; display:inline-block; }
+        .product-img {
+            width: 100%;
+            height: 220px;
+            object-fit: contain; /* Giúp ảnh nằm trọn trong khung */
+            object-position: center; /* Canh giữa ảnh */
+            border-radius: 10px;
+            background-color: #0f1724; /* Màu nền để lấp chỗ trống */
+            padding: 10px; /* Tạo khoảng cách đều giữa ảnh và khung */
+            transition: transform .3s ease;
+        }
+        .product-card:hover .product-img {
+            transform: scale(1.03);
+        }
+
     </style>
 </head>
 <body ng-controller="MainCtrl as vm">
 
 <div class="site-container">
+
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
@@ -37,7 +52,8 @@
         </div>
         <div class="d-flex align-items-center gap-3">
             <div>
-                <input type="text" class="form-control search-input" ng-model="vm.query" ng-change="vm.filter()" placeholder="Tìm kiếm: AirPods, case, sạc..." />
+                <input type="text" class="form-control search-input" ng-model="vm.query"
+                       ng-change="vm.debouncedFilter()" placeholder="Tìm kiếm: AirPods, case, sạc..." />
             </div>
 
             <div ng-if="vm.currentUser" class="dropdown">
@@ -78,24 +94,31 @@
 
     <!-- Categories -->
     <div class="mb-3">
-        <div class="d-flex gap-2 category-list">
+        <div class="d-flex gap-2 category-list flex-wrap">
             <a href="#" ng-class="{'category-active': vm.selectedCat==null}" ng-click="vm.selectCategory(null)">Tất cả</a>
-            <a ng-repeat="c in vm.categories" href="#" ng-click="vm.selectCategory(c.id)" ng-class="{'category-active': vm.selectedCat==c.id}">{{c.name}}</a>
+            <a ng-repeat="c in vm.categories" href="#" ng-click="vm.selectCategory(c.id)"
+               ng-class="{'category-active': vm.selectedCat==c.id}">{{c.name}}</a>
         </div>
     </div>
 
     <!-- Product grid -->
     <div class="row g-3">
-        <div class="col-md-4" ng-repeat="p in vm.filtered | orderBy:'-id'">
+        <div class="col-md-4" ng-repeat="p in vm.filtered | orderBy:'-id' track by p.id">
             <div class="product-card">
-                <img ng-src="{{p.img || '/img/products/placeholder.jpg'}}" alt="{{p.name}}" class="product-img mb-2" />
+                <img ng-src="{{  (p.img || 'placeholder.jpg') }}"
+                     alt="{{p.name}}"
+                     class="product-img mb-2"
+                     onerror="if (!this.dataset.error) { this.dataset.error = true; this.src='/img/placeholder.jpg'; }">
+
                 <h5 style="color:#e6eef7;">{{p.name}}</h5>
                 <p style="color:#9aa7b8; min-height:36px;">{{p.description}}</p>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="price">{{p.price | number:0}}₫</div>
                     <div>
                         <button class="btn btn-sm btn-outline-light me-2" ng-click="vm.viewProduct(p)">Chi tiết</button>
-                        <button class="btn btn-sm btn-apple" ng-click="vm.addToCart(p)" ng-disabled="p.stock<=0">
+                        <button class="btn btn-sm btn-apple"
+                                ng-click="vm.addToCart(p)"
+                                ng-disabled="p.stock<=0">
                             {{ p.stock>0 ? 'Thêm vào giỏ' : 'Hết hàng' }}
                         </button>
                     </div>
@@ -103,7 +126,8 @@
             </div>
         </div>
     </div>
-</div> <!-- Đóng site-container -->
+
+</div> <!-- ✅ đóng site-container -->
 
 <!-- Cart Offcanvas -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="cartCanvas">
@@ -140,7 +164,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     angular.module('appleShopApp', [])
-        .controller('MainCtrl', ['$http','$window', function($http,$window){
+        .controller('MainCtrl', ['$http', '$window', '$timeout', function($http, $window, $timeout) {
             const vm = this;
             vm.categories = [];
             vm.products = [];
@@ -150,6 +174,7 @@
             vm.currentUser = null;
             vm.cart = [];
             vm.cartCount = 0;
+            let searchTimeout = null;
 
             vm.init = function() {
                 vm.loadCategories();
@@ -157,87 +182,104 @@
                 vm.loadUser();
             };
 
-            // User
             vm.loadUser = function() {
-                $http.get('/api/auth/me', {withCredentials:true})
+                $http.get('/api/auth/me', {withCredentials: true})
                     .then(resp => {
                         vm.currentUser = resp.data;
-                        vm.loadCart(); // load cart khi có user
+                        if (vm.currentUser?.username) vm.loadCart();
                     })
-                    .catch(err => console.error("Không thể lấy user:", err));
+                    .catch(() => vm.currentUser = null);
             };
+
             vm.logout = function() {
-                $http.post('/api/auth/logout', {}, {withCredentials:true})
-                    .then(() => { vm.currentUser = null; $window.location.href = '/login.html'; });
+                $http.post('/api/auth/logout', {}, {withCredentials: true})
+                    .then(() => {
+                        vm.currentUser = null;
+                        $window.location.href = '/login.html';
+                    });
             };
 
-            // Categories & Products
-            vm.loadCategories = () => $http.get('/api/categories').then(resp=>vm.categories=resp.data);
-            vm.loadProducts = () => $http.get('/api/products').then(resp=>{
-                vm.products = resp.data;
-                vm.filtered = vm.products.slice();
-            });
+            vm.loadCategories = () => {
+                $http.get('/api/categories')
+                    .then(resp => vm.categories = resp.data);
+            };
 
-            // Filter
-            vm.selectCategory = id=>{ vm.selectedCat=id; vm.filter(); };
-            vm.filter = ()=> {
+            vm.loadProducts = () => {
+                $http.get('/api/products')
+                    .then(resp => {
+                        vm.products = resp.data;
+                        vm.filtered = vm.products.slice();
+                    });
+            };
+
+            vm.selectCategory = id => {
+                vm.selectedCat = id;
+                vm.filterNow();
+            };
+
+            vm.debouncedFilter = function() {
+                if (searchTimeout) $timeout.cancel(searchTimeout);
+                searchTimeout = $timeout(vm.filterNow, 300);
+            };
+
+            vm.filterNow = function() {
                 const q = vm.query ? vm.query.toLowerCase() : '';
-                vm.filtered = vm.products.filter(p=>{
-                    const matchesQ = !q || (p.name && p.name.toLowerCase().includes(q)) || (p.description && p.description.toLowerCase().includes(q));
-                    const matchesCat = vm.selectedCat==null || p.category_id==vm.selectedCat;
-                    return matchesQ && matchesCat;
+                vm.filtered = vm.products.filter(p => {
+                    const matchQ = !q || (p.name?.toLowerCase().includes(q)) || (p.description?.toLowerCase().includes(q));
+                    const matchCat = vm.selectedCat == null || (p.category && p.category.id === vm.selectedCat);
+                    return matchQ && matchCat;
                 });
             };
 
-            // Product details
-            vm.viewProduct = p=> alert(p.name+'\n\n'+(p.description||'Không có mô tả.'));
-
-            // Cart APIs
-            vm.loadCart = function(){
-                if(!vm.currentUser) return;
-                $http.get('/api/cart/items', {withCredentials:true})
-                    .then(resp => { vm.cart = resp.data; vm.updateCartCount(); })
-                    .catch(err => console.error('Không load được giỏ:', err));
+            vm.loadCart = function() {
+                if (!vm.currentUser) return;
+                $http.get('/api/cart/items', {withCredentials: true})
+                    .then(resp => {
+                        vm.cart = resp.data;
+                        vm.updateCartCount();
+                    });
             };
 
-            vm.addToCart = function(p){
-                if(!vm.currentUser){ alert('Vui lòng đăng nhập trước khi thêm giỏ'); return; }
-                const f = vm.cart.find(i=>i.product.id===p.id);
-                const qty = f ? f.qty + 1 : 1;
-                $http.post('/api/cart/items', { productId: p.id, qty: qty }, {withCredentials:true})
-                    .then(resp=>{
+            vm.addToCart = function(p) {
+                if (!vm.currentUser) return alert('Vui lòng đăng nhập trước.');
+                const existing = vm.cart.find(i => i.product.id === p.id);
+                const qty = existing ? existing.qty + 1 : 1;
+                $http.post('/api/cart/items', {productId: p.id, qty}, {withCredentials: true})
+                    .then(resp => {
                         const updated = resp.data;
-                        const idx = vm.cart.findIndex(i=>i.product.id===p.id);
-                        if(idx>=0) vm.cart[idx] = updated;
+                        const idx = vm.cart.findIndex(i => i.product.id === p.id);
+                        if (idx >= 0) vm.cart[idx] = updated;
                         else vm.cart.push(updated);
                         vm.updateCartCount();
-                    })
-                    .catch(err=>console.error('Không thêm được vào giỏ:', err));
+                    });
             };
 
-            vm.changeQty = function(item,newQty){
-                if(newQty<=0){
-                    $http.delete('/api/cart/items/'+item.id, {withCredentials:true})
-                        .then(()=> { vm.cart = vm.cart.filter(i=>i.id!==item.id); vm.updateCartCount(); })
-                        .catch(err=>console.error('Không xóa được:',err));
+            vm.changeQty = function(item, newQty) {
+                if (newQty <= 0) {
+                    $http.delete('/api/cart/items/' + item.id, {withCredentials: true})
+                        .then(() => {
+                            vm.cart = vm.cart.filter(i => i.id !== item.id);
+                            vm.updateCartCount();
+                        });
                 } else {
-                    $http.post('/api/cart/items', { productId: item.product.id, qty: newQty }, {withCredentials:true })
-                        .then(resp=>{ item.qty = resp.data.qty; vm.updateCartCount(); })
-                        .catch(err=>console.error('Không update được:',err));
+                    $http.post('/api/cart/items', {productId: item.product.id, qty: newQty}, {withCredentials: true})
+                        .then(resp => {
+                            item.qty = resp.data.qty;
+                            vm.updateCartCount();
+                        });
                 }
             };
 
-            vm.openCart = function(){
-                if(vm.currentUser) vm.loadCart();
+            vm.removeItem = item => vm.changeQty(item, 0);
+
+            vm.openCart = function() {
+                if (!vm.currentUser) return alert('Vui lòng đăng nhập để xem giỏ hàng.');
                 new bootstrap.Offcanvas(document.getElementById('cartCanvas')).show();
             };
 
-            vm.updateCartCount = ()=> vm.cartCount = vm.cart.reduce((s,i)=>s+i.qty,0);
-            vm.total = ()=> vm.cart.reduce((s,i)=>s+(i.product.price*i.qty),0);
-            vm.checkout = ()=> {
-                if(!vm.currentUser){ alert('Vui lòng đăng nhập trước khi thanh toán.'); return; }
-                alert('Demo: gọi API thanh toán. Tổng: '+vm.total()+'₫');
-            };
+            vm.updateCartCount = () => vm.cartCount = vm.cart.reduce((s, i) => s + i.qty, 0);
+            vm.total = () => vm.cart.reduce((s, i) => s + (i.product.price * i.qty), 0);
+            vm.checkout = () => alert('Demo thanh toán: ' + vm.total().toLocaleString() + '₫');
 
             vm.init();
         }]);
