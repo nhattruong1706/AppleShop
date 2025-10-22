@@ -1,0 +1,205 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi" ng-app="appleShopApp" ng-controller="ProfileCtrl">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Hồ sơ cá nhân</title>-->
+<!--    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>-->
+<!--    <script src="/js/profile-controller.js"></script>-->
+
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">-->
+<!--</head>-->
+<!--<body class="container mt-5">-->
+
+<!--<h2 class="text-center mb-4">Cập nhật hồ sơ</h2>-->
+
+<!--<form ng-submit="updateProfile()" class="card p-4 shadow-lg rounded-3">-->
+<!--    <div class="mb-3">-->
+<!--        <label>Họ và tên</label>-->
+<!--        <input type="text" ng-model="user.fullname" class="form-control" required>-->
+<!--    </div>-->
+
+<!--    <div class="mb-3">-->
+<!--        <label>Email</label>-->
+<!--        <input type="email" ng-model="user.email" class="form-control" required>-->
+<!--    </div>-->
+
+<!--    <div class="mb-3">-->
+<!--        <label>Mật khẩu mới</label>-->
+<!--        <input type="password" ng-model="user.password" class="form-control" placeholder="Để trống nếu không đổi">-->
+<!--    </div>-->
+
+<!--    <div class="mb-3">-->
+<!--        <label for="phone" class="form-label">Số điện thoại</label>-->
+<!--        <input type="text" id="phone" class="form-control" ng-model="user.phone" placeholder="Nhập số điện thoại">-->
+<!--    </div>-->
+
+
+<!--    <div class="d-flex justify-content-between">-->
+<!--        <button type="button" class="btn btn-secondary w-45" ng-click="goBack()">← Quay về</button>-->
+<!--        <button type="submit" class="btn btn-primary w-45">💾 Lưu thay đổi</button>-->
+<!--    </div>-->
+<!--</form>-->
+
+<!--<div class="mt-3 text-center text-success" ng-if="message">{{message}}</div>-->
+
+<!--<script>-->
+<!--    angular.module('appleShopApp', [])-->
+<!--        .controller('ProfileCtrl', function($scope, $http) {-->
+<!--            $scope.user = {};-->
+<!--            $scope.message = "";-->
+
+<!--            // Hàm quay về-->
+<!--            $scope.goBack = function() {-->
+<!--                window.history.back();-->
+<!--            };-->
+
+<!--            // ===== Lấy thông tin user hiện tại =====-->
+<!--            $http.get("/api/profile", { withCredentials: true }).then(-->
+<!--                function(res) {-->
+<!--                    $scope.user = res.data;-->
+<!--                    console.log("User hiện tại:", $scope.user);-->
+<!--                },-->
+<!--                function(err) {-->
+<!--                    console.error("Không thể tải thông tin người dùng:", err);-->
+<!--                    $scope.message = "Không thể tải thông tin người dùng!";-->
+<!--                }-->
+<!--            );-->
+
+<!--            // ===== Cập nhật hồ sơ =====-->
+<!--            $scope.updateProfile = function() {-->
+<!--                $http.put("/api/profile", $scope.user, { withCredentials: true })-->
+<!--                    .then(-->
+<!--                        function(res) {-->
+<!--                            $scope.message = " Cập nhật thành công!";-->
+<!--                            console.log("Kết quả cập nhật:", res.data);-->
+<!--                        },-->
+<!--                        function(err) {-->
+<!--                            console.error(" Lỗi cập nhật hồ sơ:", err);-->
+<!--                            $scope.message = " Lỗi cập nhật hồ sơ!";-->
+<!--                        }-->
+<!--                    );-->
+<!--            };-->
+<!--        });-->
+<!--</script>-->
+
+
+<!--</body>-->
+<!--</html>-->
+
+
+
+
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ sơ cá nhân | AppleShop</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/js/profile-controller.js"></script>
+
+    <style>
+        body {
+            background: #f5f6fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .profile-container {
+            max-width: 650px;
+            margin: 50px auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h2, h3 {
+            font-weight: 600;
+            color: #333;
+        }
+        label {
+            font-weight: 500;
+        }
+        .btn-primary {
+            background-color: #0071e3;
+            border-color: #0071e3;
+        }
+        .btn-primary:hover {
+            background-color: #005bb5;
+        }
+        .alert {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body ng-controller="ProfileCtrl">
+
+<div class="profile-container">
+    <div class="text-center mb-4">
+        <h2>👤 Hồ sơ cá nhân</h2>
+        <p class="text-muted">Cập nhật thông tin tài khoản của bạn</p>
+    </div>
+
+    <!-- Thông báo -->
+    <div ng-if="message" class="alert alert-success text-center" role="alert">
+        {{message}}
+    </div>
+    <div ng-if="errorMessage" class="alert alert-danger text-center" role="alert">
+        {{errorMessage}}
+    </div>
+
+    <!-- Thông tin cá nhân -->
+    <div class="card p-4 mb-4">
+        <h4 class="mb-3">Thông tin cơ bản</h4>
+        <form ng-submit="updateProfile()">
+            <div class="mb-3">
+                <label>Họ và tên</label>
+                <input type="text" class="form-control" ng-model="user.fullName" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" class="form-control" ng-model="user.email" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Số điện thoại</label>
+                <input type="text" class="form-control" ng-model="user.phone">
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Đổi mật khẩu -->
+    <div class="card p-4">
+        <h4 class="mb-3">Đổi mật khẩu</h4>
+        <div class="mb-3">
+            <label>Mật khẩu cũ</label>
+            <input type="password" class="form-control" ng-model="passwordData.oldPassword" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Mật khẩu mới</label>
+            <input type="password" class="form-control" ng-model="passwordData.newPassword" required>
+        </div>
+
+        <div class="text-end">
+            <button class="btn btn-outline-primary px-4" ng-click="changePassword()">Đổi mật khẩu</button>
+        </div>
+
+        <div ng-if="messagePwd" class="alert alert-info text-center mt-3">
+            {{messagePwd}}
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
