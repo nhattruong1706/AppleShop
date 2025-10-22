@@ -1,7 +1,3 @@
-
-
-
-
 <!DOCTYPE html>
 <html lang="vi" ng-app="myApp">
 <head>
@@ -17,12 +13,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
-            /* nền ảnh apple + overlay */
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-            url("img/apple-bg.jpg") no-repeat center center fixed;
+            url("/img/apple-bg.jpg") no-repeat center center fixed;
             background-size: cover;
-
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -74,19 +67,18 @@
         .message.error { color: red; }
     </style>
 </head>
+
 <body ng-controller="RegisterController">
 
 <div class="register-box">
     <h2>Đăng ký tài khoản</h2>
 
-    <form ng-submit="register()">
-        <input type="text" ng-model="user.username" class="form-control" placeholder="Username" required>
+    <form ng-submit="register($event)" novalidate>
+        <input type="text" ng-model="user.username" class="form-control" placeholder="Tên đăng nhập" required>
         <input type="email" ng-model="user.email" class="form-control" placeholder="Email" required>
-        <input type="password" ng-model="user.passwordHash" class="form-control" placeholder="Password" required>
-        <input type="text" ng-model="user.fullName" class="form-control" placeholder="Full Name" required>
-        <input type="text" ng-model="user.phone" class="form-control" placeholder="Phone" required>
-
-        <input type="hidden" ng-model="user.role">
+        <input type="password" ng-model="user.passwordHash" class="form-control" placeholder="Mật khẩu" required>
+        <input type="text" ng-model="user.fullName" class="form-control" placeholder="Họ tên" required>
+        <input type="text" ng-model="user.phone" class="form-control" placeholder="Số điện thoại" required>
 
         <button type="submit" class="btn btn-apple">Đăng Ký</button>
     </form>
@@ -99,30 +91,52 @@
     </div>
 </div>
 
-<!-- AngularJS script giữ nguyên -->
 <script>
     angular.module("myApp", [])
         .controller("RegisterController", function($scope, $http) {
-            $scope.user = {};
+
+            // Khởi tạo dữ liệu mặc định
+            $scope.user = {
+                username: "",
+                email: "",
+                passwordHash: "",
+                fullName: "",
+                phone: "",
+                role: "USER"
+            };
+
             $scope.success = "";
             $scope.error = "";
 
-            $scope.register = function() {
-                // gán role mặc định là USER
-                $scope.user.role = "USER";
+            $scope.register = function(event) {
+                event.preventDefault(); // chặn reload trang
 
+                console.log("Dữ liệu gửi lên:", $scope.user);
+
+                // Gửi POST request đến API
                 $http.post("http://localhost:8080/api/users", $scope.user)
                     .then(function(response) {
-                        $scope.success = "Đăng ký thành công!";
+                        console.log("Phản hồi từ server:", response.data);
+                        $scope.success = "✅ Đăng ký thành công!";
                         $scope.error = "";
-                        $scope.user = {}; // reset form
-                    }, function(error) {
-                        $scope.error = "Đăng ký thất bại: " + (error.data.message || error.statusText);
+
+                        // reset form
+                        $scope.user = {
+                            username: "",
+                            email: "",
+                            passwordHash: "",
+                            fullName: "",
+                            phone: "",
+                            role: "USER"
+                        };
+                    })
+                    .catch(function(error) {
+                        console.error("Lỗi khi đăng ký:", error);
+                        $scope.error = "❌ Đăng ký thất bại: " + (error.data?.message || error.statusText);
                         $scope.success = "";
                     });
             };
         });
-
 </script>
 
 </body>

@@ -1,7 +1,5 @@
 package com.example.appleshop.repository;
 
-
-
 import com.example.appleshop.entity.Address;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

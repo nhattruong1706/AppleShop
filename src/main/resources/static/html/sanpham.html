@@ -25,34 +25,7 @@
     <div class="row">
         <!-- LEFT: Product list & create -->
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>Products</strong>
-                    <button class="btn btn-sm btn-outline-secondary" ng-click="vm.loadProducts()">Refresh</button>
-                </div>
-                <div class="card-body p-2">
-                    <div ng-if="vm.loadingProducts" class="text-center p-3">Loading...</div>
-                    <div ng-if="!vm.loadingProducts && vm.products.length === 0" class="p-3">No products yet.</div>
-
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="p in vm.products track by p.id">
-                            <div>
-                                <div class="font-weight-bold">{{p.name}}</div>
-                                <div class="small-muted">{{p.description}}</div>
-                                <div class="small-muted">Price: {{p.price | currency:'₫':0}} • Stock: {{p.stock}}</div>
-                                <<img ng-if="p.img" ng-src="{{vm.API_BASE + p.img}}" class="preview rounded">
-                            </div>
-                            <div class="text-right">
-                                <button class="btn btn-sm btn-info mb-1" ng-click="vm.selectProduct(p)">Variants</button>
-                                <button class="btn btn-sm btn-primary mb-1" ng-click="vm.editProduct(p)">Edit</button>
-                                <button class="btn btn-sm btn-danger" ng-click="vm.deleteProduct(p)">Delete</button>
-                            </div>
-                        </li>
-                    </ul>
-
-                </div>
-            </div>
-
+            <!-- 🔹 Edit/Create Product lên trên -->
             <div class="card">
                 <div class="card-header">
                     <strong>{{vm.editingProduct ? 'Edit Product' : 'Create Product'}}</strong>
@@ -80,7 +53,6 @@
                             </div>
                         </div>
 
-                        <!-- 🔹 Chọn Category -->
                         <div class="form-group">
                             <label>Category</label>
                             <select class="form-control"
@@ -91,7 +63,6 @@
                             </select>
                         </div>
 
-                        <!-- 🔹 Upload ảnh -->
                         <div class="form-group">
                             <label>Product Image</label>
                             <input type="file" class="form-control-file"
@@ -112,8 +83,36 @@
                 </div>
             </div>
 
+            <!-- 🔹 Product List xuống dưới -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Products</strong>
+                    <button class="btn btn-sm btn-outline-secondary" ng-click="vm.loadProducts()">Refresh</button>
+                </div>
+                <div class="card-body p-2">
+                    <div ng-if="vm.loadingProducts" class="text-center p-3">Loading...</div>
+                    <div ng-if="!vm.loadingProducts && vm.products.length === 0" class="p-3">No products yet.</div>
 
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="p in vm.products track by p.id">
+                            <div>
+                                <div class="font-weight-bold">{{p.name}}</div>
+                                <div class="small-muted">{{p.description}}</div>
+                                <div class="small-muted">Price: {{p.price | currency:'₫':0}} • Stock: {{p.stock}}</div>
+                                <img ng-if="p.img" ng-src="{{vm.API_BASE + p.img}}" class="preview rounded">
+                            </div>
+                            <div class="text-right">
+                                <button class="btn btn-sm btn-info mb-1" ng-click="vm.selectProduct(p)">Variants</button>
+                                <button class="btn btn-sm btn-primary mb-1" ng-click="vm.editProduct(p)">Edit</button>
+                                <button class="btn btn-sm btn-danger" ng-click="vm.deleteProduct(p)">Delete</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
+
+
 
         <!-- RIGHT: Selected product variants -->
         <div class="col-md-6">
@@ -133,7 +132,8 @@
                             <div>
                                 <div class="font-weight-bold">{{v.variantName}}</div>
                                 <div class="small-muted">{{v.color}} • {{v.storage}} • {{v.price | currency:'₫':0}}</div>
-                                <img ng-if="v.imageUrl" ng-src="{{v.imageUrl}}" class="preview rounded">
+                                <!-- SỬA IMG -->
+                                <img ng-if="v.img" ng-src="{{vm.API_BASE + v.img}}" class="preview rounded">
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-primary mb-1" ng-click="vm.editVariant(v)">Edit</button>
@@ -175,20 +175,17 @@
                             </div>
 
                             <!-- Upload ảnh variant -->
-                            <!-- Upload ảnh Variant -->
                             <div class="form-group">
                                 <label>Variant Image</label>
                                 <input type="file" class="form-control-file"
                                        onchange="angular.element(this).scope().vm.onVariantImageSelect(this.files)">
-                                <!-- ✅ Hiển thị ảnh preview -->
-                                <div ng-if="vm.variantForm.imageUrl" class="mt-2">
-                                    <img ng-src="{{vm.API_BASE + vm.variantForm.imageUrl}}"
+                                <div ng-if="vm.variantForm.img" class="mt-2">
+                                    <img ng-src="{{vm.API_BASE + vm.variantForm.img}}"
                                          width="120" height="120"
                                          class="rounded shadow-sm border"
                                          style="object-fit: cover;">
                                 </div>
                             </div>
-
 
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -201,8 +198,6 @@
                             </div>
                         </form>
                     </div>
-
-
                 </div>
             </div>
 
@@ -225,27 +220,22 @@
                 var vm = this;
                 vm.API_BASE = API_BASE;
 
-                // --- Product ---
                 vm.products = [];
                 vm.loadingProducts = false;
                 vm.productForm = {};
                 vm.editingProduct = false;
                 vm.productMessage = '';
 
-                // --- Upload flags ---
                 vm.uploadingProductImage = false;
                 vm.uploadingVariantImage = false;
 
-                // --- Variant ---
                 vm.selectedProduct = null;
                 vm.variants = [];
                 vm.variantForm = {};
                 vm.editingVariant = false;
                 vm.variantMessage = '';
 
-                // =========================
-                // 📦 LOAD PRODUCTS
-                // =========================
+                // LOAD PRODUCTS
                 vm.loadProducts = function() {
                     vm.loadingProducts = true;
                     $http.get(API_BASE + '/api/products')
@@ -254,33 +244,19 @@
                         .finally(() => vm.loadingProducts = false);
                 };
 
-                // =========================
-                // 🖼️ UPLOAD PRODUCT IMAGE
-                // =========================
+                // UPLOAD PRODUCT IMAGE
                 vm.onProductImageSelect = function(files) {
                     if (!files || !files[0] || vm.uploadingProductImage) return;
                     vm.uploadingProductImage = true;
-
                     let formData = new FormData();
                     formData.append("file", files[0]);
-
-                    $http.post(API_BASE + '/api/upload/image', formData, {
-                        headers: { 'Content-Type': undefined }
-                    }).then(res => {
-                        const url = res.data.url; // "/img/abc.jpg"
-
-                        vm.productForm.img = url;
-                    }).catch(err => {
-                        console.error(err);
-                        alert('❌ Upload ảnh sản phẩm thất bại!');
-                    }).finally(() => {
-                        vm.uploadingProductImage = false;
-                    });
+                    $http.post(API_BASE + '/api/upload/image', formData, { headers: { 'Content-Type': undefined } })
+                        .then(res => vm.productForm.img = res.data.url)
+                        .catch(err => { console.error(err); alert('❌ Upload ảnh sản phẩm thất bại!'); })
+                        .finally(() => vm.uploadingProductImage = false);
                 };
 
-                // =========================
-                // 📂 LOAD CATEGORIES
-                // =========================
+                // LOAD CATEGORIES
                 vm.categories = [];
                 vm.loadCategories = function() {
                     $http.get(API_BASE + '/api/categories')
@@ -288,109 +264,70 @@
                         .catch(err => console.error(err));
                 };
 
-                // =========================
-                // 💾 SAVE PRODUCT
-                // =========================
+                // SAVE PRODUCT
                 vm.saveProduct = function() {
-                    const url = vm.editingProduct
-                        ? API_BASE + '/api/products/' + vm.productForm.id
-                        : API_BASE + '/api/products';
-
+                    const url = vm.editingProduct ? API_BASE + '/api/products/' + vm.productForm.id : API_BASE + '/api/products';
                     const method = vm.editingProduct ? 'put' : 'post';
-
                     $http[method](url, vm.productForm)
-                        .then(() => {
-                            vm.productMessage = vm.editingProduct ? '✅ Cập nhật thành công' : '✅ Thêm mới thành công';
-                            vm.resetProductForm();
-                            vm.loadProducts();
-                        })
+                        .then(() => { vm.productMessage = vm.editingProduct ? '✅ Cập nhật thành công' : '✅ Thêm mới thành công'; vm.resetProductForm(); vm.loadProducts(); })
                         .catch(() => alert('❌ Lưu sản phẩm thất bại!'));
                 };
 
-                vm.editProduct = p => { vm.editingProduct = true; vm.productForm = angular.copy(p); };
+                vm.editProduct = p => {
+                    vm.editingProduct = true;
+                    vm.productForm = angular.copy(p);
+                    // 🔹 Cuộn lên đầu trang khi bấm Edit Product
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
                 vm.resetProductForm = () => { vm.editingProduct = false; vm.productForm = {}; vm.productMessage = ''; };
-                vm.deleteProduct = p => {
-                    if (confirm('Xóa sản phẩm "' + p.name + '"?')) {
-                        $http.delete(API_BASE + '/api/products/' + p.id)
-                            .then(() => vm.loadProducts());
-                    }
+                vm.deleteProduct = p => { if(confirm('Xóa sản phẩm "' + p.name + '"?')) $http.delete(API_BASE + '/api/products/' + p.id).then(() => vm.loadProducts()); };
+
+                // VARIANTS
+                vm.selectProduct = p => {
+                    vm.selectedProduct = p;
+                    vm.loadVariants(p.id);
+                    // 🔹 Cuộn lên đầu trang khi chọn sản phẩm để xem variants
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
 
-                // =========================
-                // 🧩 VARIANTS
-                // =========================
-                vm.selectProduct = p => { vm.selectedProduct = p; vm.loadVariants(p.id); };
                 vm.closeVariants = () => { vm.selectedProduct = null; vm.variants = []; };
-                vm.loadVariants = id => {
-                    $http.get(API_BASE + '/api/products/' + id + '/variants')
-                        .then(res => vm.variants = res.data)
-                        .catch(() => alert('❌ Lỗi tải biến thể!'));
-                };
+                vm.loadVariants = id => { $http.get(API_BASE + '/api/products/' + id + '/variants').then(res => vm.variants = res.data).catch(() => alert('❌ Lỗi tải biến thể!')); };
 
-                // =========================
-                // 🖼️ UPLOAD VARIANT IMAGE
-                // =========================
+                // UPLOAD VARIANT IMAGE
                 vm.onVariantImageSelect = function(files) {
                     if (!files || !files[0] || vm.uploadingVariantImage) return;
                     vm.uploadingVariantImage = true;
-
                     let formData = new FormData();
                     formData.append("file", files[0]);
-
-                    $http.post(API_BASE + '/api/upload/image', formData, {
-                        headers: { 'Content-Type': undefined }
-                    }).then(res => {
-                        const url = res.data.url; // "/img/xxx.jpg"
-
-                        vm.variantForm.img = url; // ✅ lưu tên file vào DB
-                    }).catch(err => {
-                        console.error(err);
-                        alert('❌ Upload ảnh biến thể thất bại!');
-                    }).finally(() => {
-                        vm.uploadingVariantImage = false;
-                    });
+                    $http.post(API_BASE + '/api/upload/image', formData, { headers: { 'Content-Type': undefined } })
+                        .then(res => vm.variantForm.img = res.data.url)
+                        .catch(err => { console.error(err); alert('❌ Upload ảnh biến thể thất bại!'); })
+                        .finally(() => vm.uploadingVariantImage = false);
                 };
 
-                // =========================
-                // 💾 SAVE VARIANT
-                // =========================
+                // SAVE VARIANT
                 vm.saveVariant = function() {
                     if (!vm.selectedProduct) return alert('⚠️ Hãy chọn sản phẩm trước!');
-
-                    const url = vm.editingVariant
-                        ? API_BASE + '/api/products/variants/' + vm.variantForm.id
-                        : API_BASE + '/api/products/' + vm.selectedProduct.id + '/variants';
-
+                    const url = vm.editingVariant ? API_BASE + '/api/products/variants/' + vm.variantForm.id : API_BASE + '/api/products/' + vm.selectedProduct.id + '/variants';
                     const method = vm.editingVariant ? 'put' : 'post';
-
                     $http[method](url, vm.variantForm)
-                        .then(() => {
-                            vm.variantMessage = vm.editingVariant ? '✅ Cập nhật biến thể' : '✅ Thêm biến thể';
-                            vm.resetVariantForm();
-                            vm.loadVariants(vm.selectedProduct.id);
-                        })
+                        .then(() => { vm.variantMessage = vm.editingVariant ? '✅ Cập nhật biến thể' : '✅ Thêm biến thể'; vm.resetVariantForm(); vm.loadVariants(vm.selectedProduct.id); })
                         .catch(() => alert('❌ Lưu biến thể thất bại!'));
                 };
 
-                vm.editVariant = v => { vm.editingVariant = true; vm.variantForm = angular.copy(v); };
-                vm.resetVariantForm = () => { vm.editingVariant = false; vm.variantForm = {}; vm.variantMessage = ''; };
-                vm.deleteVariant = v => {
-                    if (confirm('Xóa biến thể "' + v.variantName + '"?')) {
-                        $http.delete(API_BASE + '/api/products/variants/' + v.id)
-                            .then(() => vm.loadVariants(vm.selectedProduct.id));
-                    }
-                };
+                vm.editVariant = v => {
+                    vm.editingVariant = true;
+                    vm.variantForm = angular.copy(v);
 
-                // =========================
-                // 🚀 INIT
-                // =========================
+                };
+                vm.resetVariantForm = () => { vm.editingVariant = false; vm.variantForm = {}; vm.variantMessage = ''; };
+                vm.deleteVariant = v => { if(confirm('Xóa biến thể "' + v.variantName + '"?')) $http.delete(API_BASE + '/api/products/variants/' + v.id).then(() => vm.loadVariants(vm.selectedProduct.id)); };
+
+                // INIT
                 vm.loadProducts();
                 vm.loadCategories();
             }]);
     })();
 </script>
-
-
-
 </body>
 </html>

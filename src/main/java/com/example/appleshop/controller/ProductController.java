@@ -33,7 +33,7 @@ public class ProductController {
             product.setStock(Integer.valueOf(body.get("stock").toString()));
             product.setImg((String) body.get("img"));
 
-            // ✅ Lấy categoryId từ JSON (sửa kiểu Long → Integer)
+            //  Lấy categoryId từ JSON (sửa kiểu Long → Integer)
             if (body.get("categoryId") != null) {
                 Integer categoryId = Integer.valueOf(body.get("categoryId").toString());
                 Category category = categoryRepository.findById(categoryId)
