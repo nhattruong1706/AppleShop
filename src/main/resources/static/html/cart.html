@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp">
+<head>
+    <meta charset="UTF-8">
+    <title>🛒 Giỏ hàng của bạn</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(#0f1724, #111827);
+            color: #fff;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+            padding-top: 40px;
+        }
+        .site-container { max-width: 1200px; margin: 0 auto; }
+        .cart-card {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .product-img { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+        .product-name { font-weight: 600; color: #f3f4f6; }
+        .product-price { color: #f87171; font-weight: 600; }
+        .qty-input { width: 50px; text-align: center; }
+        .btn-delete { background: none; border: none; color: #f87171; font-size: 18px; cursor: pointer; }
+        .btn-delete:hover { color: #ef4444; }
+        .cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: #111827;
+            border-top: 1px solid #374151;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header dùng HeaderCtrl -->
+<div ng-controller="HeaderCtrl as vm" class="site-container mb-4">
+    <div class="d-flex justify-content-between align-items-center py-3">
+        <!-- Logo + Tên -->
+        <div class="d-flex align-items-center gap-3">
+            <img src="/img/logo.png" alt="logo" style="height:48px;">
+            <div>
+                <h4 style="margin:0; color:#fff;">AppleShop</h4>
+                <small style="color:#94a3b8;">Phụ kiện chính hãng & chất lượng</small>
+            </div>
+        </div>
+
+        <!-- User + Cart -->
+        <div class="d-flex align-items-center gap-3">
+            <div ng-if="vm.currentUser" class="dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Xin chào, <b>{{vm.currentUser.username}}</b>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/profile.html">Trang cá nhân</a></li>
+                    <li><a class="dropdown-item" href="/settings.html">Cài đặt</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="" ng-click="vm.logout()">Đăng xuất</a></li>
+                </ul>
+            </div>
+            <div ng-if="!vm.currentUser">
+                <a class="btn btn-outline-light btn-sm" href="/login.html">Đăng nhập / Đăng ký</a>
+            </div>
+            <div>
+                <a href="/html/cart.html" class="btn btn-outline-light">Giỏ hàng</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="site-container" ng-controller="CartController as cartVm" ng-init="cartVm.loadCart()">
+    <h3 class="text-center mb-4">🛍️ Giỏ hàng của bạn</h3>
+
+    <div class="cart-card" ng-repeat="item in cartVm.cartItems">
+        <input type="checkbox" ng-model="item.selected" ng-change="cartVm.updateTotal()">
+        <img ng-src="{{cartVm.API_BASE + item.variant.img}}" class="product-img" alt="{{item.variant.variantName}}">
+        <div class="flex-grow-1">
+            <div class="product-name">{{item.variant.variantName}}</div>
+            <div class="product-price mt-1">{{item.variant.price | currency:'₫':0}}</div>
+            <div class="d-flex align-items-center mt-2">
+                <button class="btn btn-sm btn-outline-light" ng-click="cartVm.decreaseQty(item)">-</button>
+                <input type="text" class="form-control qty-input mx-2" ng-model="item.qty" ng-change="cartVm.validateQty(item)" readonly>
+                <button class="btn btn-sm btn-outline-light" ng-click="cartVm.increaseQty(item)">+</button>
+                <span class="ms-3 fw-bold text-light">Tổng: {{item.variant.price * item.qty | currency:'₫':0}}</span>
+            </div>
+            <div class="small text-muted mt-1">Kho còn: {{item.variant.stock}}</div>
+        </div>
+        <button class="btn-delete" ng-click="cartVm.removeItem(item.id)">🗑️</button>
+    </div>
+
+    <div class="cart-footer">
+        <div>
+            <input type="checkbox" ng-model="cartVm.selectAll" ng-change="cartVm.toggleSelectAll()"> Chọn tất cả
+        </div>
+        <div>
+            <strong>Tổng thanh toán: </strong>
+            <span class="text-red-500 fs-5">{{cartVm.totalAmount | currency:'₫':0}}</span>
+            <button class="btn btn-success ms-3" ng-click="cartVm.placeOrder()">Mua hàng</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    angular.module('appleShopApp', [])
+        .controller('HeaderCtrl', ['$http', '$window', function($http, $window){
+            const vm = this;
+            vm.currentUser = null;
+
+            vm.loadUser = function(){
+                $http.get('/api/auth/me', {withCredentials:true})
+                    .then(resp => vm.currentUser = resp.data)
+                    .catch(()=> vm.currentUser = null);
+            };
+
+            vm.logout = function(){
+                $http.post('/api/auth/logout', {}, {withCredentials:true})
+                    .then(()=> { vm.currentUser=null; $window.location.href='/login.html'; });
+            };
+
+            vm.loadUser();
+        }])
+        .controller('CartController', ['$http', '$window', function($http, $window){
+            const vm = this;
+            vm.cartItems = [];
+            vm.totalAmount = 0;
+            vm.selectAll = false;
+            vm.API_BASE = '';
+
+            vm.loadCart = function() {
+                $http.get("/api/cart").then(function(response){
+                    vm.cartItems = response.data.map(item => ({...item, selected:false}));
+                    vm.updateTotal();
+                });
+            };
+
+            vm.increaseQty = function(item){
+                if(item.qty >= item.variant.stock){
+                    alert("⚠️ Số lượng vượt kho! Hiện tại chỉ còn " + item.variant.stock);
+                    return;
+                }
+                $http.post("/api/cart/add", null, {params:{variantId:item.variant.id, qty:1}})
+                    .then(resp => { item.qty = resp.data.qty; vm.updateTotal(); });
+            };
+
+            vm.decreaseQty = function(item){
+                $http.post("/api/cart/decrease", null, {params:{variantId:item.variant.id, qty:1}})
+                    .then(resp => {
+                        if(resp.data===null){ vm.loadCart(); }
+                        else { item.qty = resp.data.qty; vm.updateTotal(); }
+                    });
+            };
+
+            vm.validateQty = function(item){
+                let newQty = parseInt(item.qty);
+                if(isNaN(newQty) || newQty < 1){ alert("Số lượng phải >= 1"); vm.loadCart(); return; }
+                if(newQty > item.variant.stock){ alert("⚠️ Số lượng vượt kho!"); vm.loadCart(); return; }
+                let diff = newQty - item.qty;
+                if(diff>0){ $http.post("/api/cart/add", null, {params:{variantId:item.variant.id, qty:diff}}).then(resp=>{item.qty=resp.data.qty; vm.updateTotal();}); }
+                else if(diff<0){ $http.post("/api/cart/decrease", null, {params:{variantId:item.variant.id, qty:-diff}}).then(resp=>{ if(resp.data===null){ vm.loadCart(); } else { item.qty=resp.data.qty; vm.updateTotal(); } }); }
+            };
+
+            vm.removeItem = function(itemId){
+                if(confirm("Bạn có chắc muốn xóa sản phẩm này?")){ $http.delete("/api/cart/"+itemId).then(()=>vm.loadCart()); }
+            };
+
+            vm.toggleSelectAll = function(){
+                vm.cartItems.forEach(item=>item.selected=vm.selectAll);
+                vm.updateTotal();
+            };
+
+            vm.updateTotal = function(){
+                vm.totalAmount = vm.cartItems.filter(i=>i.selected).reduce((sum,i)=>sum+i.variant.price*i.qty,0);
+            };
+
+            vm.placeOrder = function(){
+                let selectedItems = vm.cartItems.filter(i=>i.selected);
+                if(selectedItems.length===0){ alert("Vui lòng chọn ít nhất một sản phẩm!"); return; }
+                for(let i of selectedItems){ if(i.qty>i.variant.stock){ alert("⚠️ Sản phẩm "+i.variant.variantName+" vượt kho!"); return; } }
+                let orderRequest = selectedItems.map(i=>({variantId:i.variant.id, qty:i.qty}));
+                $http.post("/api/orders/create", orderRequest).then(()=>{ alert("✅ Đặt hàng thành công!"); vm.loadCart(); }, err=>{ alert("Lỗi khi đặt hàng: "+(err.data||"Không rõ nguyên nhân")); });
+            };
+        }]);
+</script>
+
+</body>
+</html>

@@ -1,6 +1,5 @@
 package com.example.appleshop.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,7 +12,7 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Liên kết với UserEntity
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
@@ -30,8 +29,6 @@ public class Address {
     @Column(name = "city")
     private String city;
 
-    @Column(name = "state")
-    private String state;
 
     @Column(name = "postal_code")
     private String postalCode;

@@ -42,6 +42,25 @@ public class ProductVariantController {
         return ResponseEntity.ok(variants);
     }
 
+    // ✅ 🔍 Tìm variant theo productId + color + storage
+    @GetMapping("/find")
+    public ResponseEntity<?> findVariant(
+            @RequestParam Long productId,
+            @RequestParam String color,
+            @RequestParam String storage) {
+
+        ProductVariant variant = variantRepository
+                .findByProductIdAndColorAndStorage(productId, color, storage)
+                .orElse(null);
+
+        if (variant == null) {
+            return ResponseEntity.status(404).body("Không tìm thấy biến thể với productId=" + productId +
+                    ", color=" + color + ", storage=" + storage);
+        }
+
+        return ResponseEntity.ok(variant);
+    }
+
     // ✅ Thêm biến thể mới
     @PostMapping
     public ResponseEntity<?> createVariant(
@@ -70,7 +89,6 @@ public class ProductVariantController {
             v.setStock(variant.getStock());
             v.setImg(variant.getImg());
 
-            // Nếu product mới được chỉ định, cập nhật luôn
             if (variant.getProduct() != null) {
                 v.setProduct(variant.getProduct());
             }

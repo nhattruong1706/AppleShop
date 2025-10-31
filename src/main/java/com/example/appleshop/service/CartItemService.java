@@ -19,44 +19,80 @@ public class CartItemService {
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
 
-    // Lấy danh sách cart của 1 user
+    // ✅ Lấy danh sách giỏ hàng của user
     public List<CartItemEntity> getCartByUserId(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return cartItemRepository.findByUser(user);
     }
 
-    // Thêm hoặc cập nhật sản phẩm vào giỏ
+    // ✅ Thêm sản phẩm vào giỏ hoặc cập nhật (tăng)
     public CartItemEntity addToCart(Long userId, Long variantId, int qty) {
+        if (qty <= 0) throw new RuntimeException("Số lượng phải lớn hơn 0");
+
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         ProductVariant variant = productVariantRepository.findById(variantId)
                 .orElseThrow(() -> new RuntimeException("Variant not found"));
 
-        // Nếu sản phẩm đã tồn tại trong giỏ → cộng thêm số lượng
-        List<CartItemEntity> existingItems = cartItemRepository.findByUser(user);
-        for (CartItemEntity item : existingItems) {
-            if (item.getVariant().getId().equals(variantId)) {
-                item.setQty(item.getQty() + qty);
-                return cartItemRepository.save(item);
+        CartItemEntity item = cartItemRepository.findByUserAndVariant(user, variant)
+                .orElse(null);
+
+        if (item != null) {
+            int newQty = item.getQty() + qty;
+            if (newQty > variant.getStock()) {
+                throw new RuntimeException("⚠️ Số lượng vượt quá tồn kho!");
             }
+            item.setQty(newQty);
+            return cartItemRepository.save(item);
         }
 
-        // Nếu chưa có → tạo mới
+        // Nếu chưa có item, kiểm tra tồn kho
+        if (qty > variant.getStock()) {
+            throw new RuntimeException("⚠️ Số lượng vượt quá tồn kho!");
+        }
+
         CartItemEntity newItem = new CartItemEntity();
         newItem.setUser(user);
         newItem.setVariant(variant);
         newItem.setQty(qty);
+
         return cartItemRepository.save(newItem);
     }
 
-    // Xóa 1 sản phẩm khỏi giỏ
+    // ✅ Giảm số lượng sản phẩm
+    public CartItemEntity decreaseQty(Long userId, Long variantId, int qty) {
+        if (qty <= 0) throw new RuntimeException("Số lượng phải lớn hơn 0");
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        ProductVariant variant = productVariantRepository.findById(variantId)
+                .orElseThrow(() -> new RuntimeException("Variant not found"));
+
+        CartItemEntity item = cartItemRepository.findByUserAndVariant(user, variant)
+                .orElseThrow(() -> new RuntimeException("Sản phẩm không có trong giỏ"));
+
+        if (item.getQty() <= qty) {
+            // Nếu giảm hết → xóa luôn
+            cartItemRepository.delete(item);
+            return null;
+        }
+
+        item.setQty(item.getQty() - qty);
+        return cartItemRepository.save(item);
+    }
+
+    // ✅ Xóa 1 sản phẩm khỏi giỏ
     public void removeItem(Long itemId) {
+        if (!cartItemRepository.existsById(itemId)) {
+            throw new RuntimeException("Cart item not found");
+        }
         cartItemRepository.deleteById(itemId);
     }
 
-    // Xóa toàn bộ giỏ hàng của user
+    // ✅ Xóa toàn bộ giỏ hàng của user
     public void clearCart(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

@@ -1,7 +1,5 @@
 package com.example.appleshop.service;
 
-
-
 import com.example.appleshop.entity.Address;
 import com.example.appleshop.repository.AddressRepository;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,7 @@ public class AddressService {
             addr.setPhone(newAddress.getPhone());
             addr.setStreet(newAddress.getStreet());
             addr.setCity(newAddress.getCity());
-            addr.setState(newAddress.getState());
+            // state đã bị xóa
             addr.setPostalCode(newAddress.getPostalCode());
             addr.setCountry(newAddress.getCountry());
             addr.setIsDefault(newAddress.getIsDefault());

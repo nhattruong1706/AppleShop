@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
+                                "/api/users",
+                                "/api/products",
                                 "/api/auth/logout",
                                 "/api/auth/me",
                                 "/html/dangnhap.html",
@@ -35,7 +37,7 @@ public class SecurityConfig {
                                 "/html/TrangChu.html",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**",
+                                "/img/**",
                                 "/html/index.html",
                                 "/html/verify.html"
 
