@@ -1,3 +1,4 @@
+
 package com.example.appleshop.controller;
 
 import com.example.appleshop.entity.Category;
@@ -29,11 +30,8 @@ public class ProductController {
             Product product = new Product();
             product.setName((String) body.get("name"));
             product.setDescription((String) body.get("description"));
-            product.setPrice(Double.valueOf(body.get("price").toString()));
-            product.setStock(Integer.valueOf(body.get("stock").toString()));
             product.setImg((String) body.get("img"));
 
-            //  Lấy categoryId từ JSON (sửa kiểu Long → Integer)
             if (body.get("categoryId") != null) {
                 Integer categoryId = Integer.valueOf(body.get("categoryId").toString());
                 Category category = categoryRepository.findById(categoryId)

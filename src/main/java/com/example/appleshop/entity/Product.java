@@ -3,7 +3,6 @@ package com.example.appleshop.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -24,18 +23,10 @@ public class Product {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "price")
-    private Double price;
-
-    @Column(name = "stock")
-    private Integer stock = 0;
-
     @Column(name = "img")
     private String img;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-
-
 }

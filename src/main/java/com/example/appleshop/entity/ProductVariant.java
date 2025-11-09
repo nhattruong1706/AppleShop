@@ -1,3 +1,4 @@
+
 package com.example.appleshop.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

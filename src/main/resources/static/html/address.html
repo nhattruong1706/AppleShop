@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý địa chỉ - AppleShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(180deg, #0f1724 0%, #111827 100%);
+            color: #e2e8f0;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+            padding-top: 100px; /* chừa header */
+            margin: 0;
+        }
+
+        .site-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* CARD */
+        .card-custom {
+            background: #1e293b; /* nền nhạt hơn để nổi bật text */
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
+
+        .card-custom h4 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* FORM */
+        .form-control {
+            background: #111827;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            transition: all 0.2s;
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-control:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 8px rgba(14,165,233,0.3);
+            outline: none;
+        }
+
+        .form-check-label {
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        /* BUTTON */
+        .btn-custom {
+            background: #0ea5e9;
+            color: #111;
+            border-radius: 10px;
+            padding: 8px 18px;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-custom:hover {
+            background: #0284c7;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px 18px;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-warning {
+            background: #facc15;
+            color: #111;
+            border-radius: 8px;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background: #eab308;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+            border-radius: 8px;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* TABLE */
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        .table thead th {
+            color: #94a3b8;
+            border-bottom: 2px solid #334155;
+            font-weight: 500;
+            text-align: left;
+            padding: 12px;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            background: #1e293b;
+            color: #fff; /* chữ trắng */
+            border-radius: 12px;
+            padding: 12px;
+            transition: background 0.2s;
+        }
+
+        .table tbody tr:hover td {
+            background: #334155;
+            color: #fff; /* giữ chữ trắng khi hover */
+        }
+
+        .badge-success {
+            background: #0ea5e9;
+            color: #111;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* Responsive */
+        @media(max-width: 768px) {
+            .site-container { padding: 0 10px; }
+            .form-control { font-size: 14px; }
+            .btn-custom, .btn-secondary { padding: 6px 14px; font-size: 14px; }
+        }
+    </style>
+
+</head>
+<div ng-include="'/html/header.html'"></div>
+
+<body ng-controller="AddressCtrl as vm">
+
+<div class="site-container">
+    <div class="card-custom">
+        <h4>{{vm.editing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới'}}</h4>
+        <form ng-submit="vm.saveAddress()">
+            <div class="mb-3">
+                <label class="form-label">Tên người nhận</label>
+                <input type="text" class="form-control" ng-model="vm.address.recipientName" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại</label>
+                <input type="text" class="form-control" ng-model="vm.address.phone" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Đường / Phố</label>
+                <input type="text" class="form-control" ng-model="vm.address.street" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Thành phố</label>
+                <input type="text" class="form-control" ng-model="vm.address.city" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mã bưu điện</label>
+                <input type="text" class="form-control" ng-model="vm.address.postalCode" maxlength="6">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Quốc gia</label>
+                <input type="text" class="form-control" ng-model="vm.address.country">
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" ng-model="vm.address.isDefault">
+                <label class="form-check-label">Đặt làm địa chỉ mặc định</label>
+            </div>
+            <button type="submit" class="btn btn-custom">{{vm.editing ? 'Cập nhật' : 'Thêm'}}</button>
+            <button type="button" class="btn btn-secondary ms-2" ng-click="vm.resetForm()">Hủy</button>
+        </form>
+    </div>
+
+    <div class="card-custom">
+        <h4>Danh sách địa chỉ</h4>
+        <table class="table table-borderless text-white">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Người nhận</th>
+                <th>Điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Mặc định</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="addr in vm.addresses" style="color: white">
+                <td>{{$index + 1}}</td>
+                <td>{{addr.recipientName}}</td>
+                <td>{{addr.phone}}</td>
+                <td>{{addr.street}}, {{addr.city}}, {{addr.postalCode}}, {{addr.country}}</td>
+                <td>
+                    <span ng-if="addr.isDefault" class="badge badge-success">Mặc định</span>
+                </td>
+                <td>
+                    <button class="btn btn-warning btn-sm me-2" ng-click="vm.editAddress(addr)">Sửa</button>
+                    <button class="btn btn-danger btn-sm" ng-click="vm.deleteAddress(addr.id)">Xóa</button>
+                </td>
+            </tr>
+            <tr ng-if="vm.addresses.length === 0">
+                <td colspan="6" class="text-center text-muted">Chưa có địa chỉ nào</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    angular.module('appleShopApp', [])
+        .controller('AddressCtrl', ['$http', function($http) {
+            const vm = this;
+            vm.addresses = [];
+            vm.address = {};
+            vm.editing = false;
+
+            vm.loadAddresses = function() {
+                $http.get('/api/addresses/me').then(res => vm.addresses = res.data);
+            };
+
+            vm.saveAddress = function() {
+                if(vm.editing) {
+                    $http.put('/api/addresses/' + vm.address.id, vm.address).then(() => {
+                        vm.loadAddresses();
+                        vm.resetForm();
+                    });
+                } else {
+                    $http.post('/api/addresses', vm.address).then(() => {
+                        vm.loadAddresses();
+                        vm.resetForm();
+                    });
+                }
+            };
+
+            vm.editAddress = function(addr) {
+                vm.address = angular.copy(addr);
+                vm.editing = true;
+            };
+
+            vm.deleteAddress = function(id) {
+                if(confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
+                    $http.delete('/api/addresses/' + id).then(() => vm.loadAddresses());
+                }
+            };
+
+            vm.resetForm = function() {
+                vm.address = {};
+                vm.editing = false;
+            };
+
+            vm.loadAddresses();
+        }]);
+</script>
+<script src="/js/header.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

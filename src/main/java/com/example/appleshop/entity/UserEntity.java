@@ -1,16 +1,18 @@
-
 package com.example.appleshop.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
-
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // tương ứng với IDENTITY(1,1) bên SQL Server
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "username")
@@ -29,9 +31,10 @@ public class UserEntity {
     private String phone;
 
     @Column(name = "role")
-    private String role;  // ví dụ: ADMIN, USER
+    private String role; // ADMIN, USER,...
 
-    public UserEntity() {
 
-    }
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<OrderEntity> orders;
 }

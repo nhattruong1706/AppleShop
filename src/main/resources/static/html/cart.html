@@ -50,7 +50,7 @@
             <img src="/img/logo.png" alt="logo" style="height:48px;">
             <div>
                 <h4 style="margin:0; color:#fff;">AppleShop</h4>
-                <small style="color:#94a3b8;">Phụ kiện chính hãng & chất lượng</small>
+                <small style="color:#94a3b8;">Sản phẩm chính hãng & chất lượng</small>
             </div>
         </div>
 
@@ -62,6 +62,8 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="/profile.html">Trang cá nhân</a></li>
+                    <li><a class="dropdown-item" href="/html/address.html">Địa chỉ giao hàng</a></li>
+                    <li><a class="dropdown-item" href="/html/my-order.html">Đơn hàng</a></li>
                     <li><a class="dropdown-item" href="/settings.html">Cài đặt</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="" ng-click="vm.logout()">Đăng xuất</a></li>
@@ -181,14 +183,26 @@
             vm.updateTotal = function(){
                 vm.totalAmount = vm.cartItems.filter(i=>i.selected).reduce((sum,i)=>sum+i.variant.price*i.qty,0);
             };
+            vm.placeOrder = function () {
+                let selectedItems = vm.cartItems.filter(i => i.selected);
+                if (selectedItems.length === 0) {
+                    alert("Vui lòng chọn ít nhất một sản phẩm!");
+                    return;
+                }
+                for (let i of selectedItems) {
+                    if (i.qty > i.variant.stock) {
+                        alert("⚠️ Sản phẩm " + i.variant.variantName + " vượt kho!");
+                        return;
+                    }
+                }
 
-            vm.placeOrder = function(){
-                let selectedItems = vm.cartItems.filter(i=>i.selected);
-                if(selectedItems.length===0){ alert("Vui lòng chọn ít nhất một sản phẩm!"); return; }
-                for(let i of selectedItems){ if(i.qty>i.variant.stock){ alert("⚠️ Sản phẩm "+i.variant.variantName+" vượt kho!"); return; } }
-                let orderRequest = selectedItems.map(i=>({variantId:i.variant.id, qty:i.qty}));
-                $http.post("/api/orders/create", orderRequest).then(()=>{ alert("✅ Đặt hàng thành công!"); vm.loadCart(); }, err=>{ alert("Lỗi khi đặt hàng: "+(err.data||"Không rõ nguyên nhân")); });
+                // Lưu các sản phẩm được chọn vào localStorage
+                localStorage.setItem("checkoutItems", JSON.stringify(selectedItems));
+
+                // Chuyển trang sang giao diện đặt hàng
+                window.location.href = "/html/checkout.html";
             };
+
         }]);
 </script>
 

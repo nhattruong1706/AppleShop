@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp" ng-controller="CheckoutCtrl as vm">
+<head>
+    <meta charset="UTF-8">
+    <title>Đặt hàng - AppleShop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(#0f1724, #111827);
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            padding-top: 40px;
+        }
+
+        h3 {
+            color: #fbbf24;
+        }
+
+        /* Bảng sản phẩm */
+        .table {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #374151 !important;
+        }
+
+        .table th {
+            background-color: #506aa2 !important;
+            color: #fff !important;
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #374151 !important;
+        }
+
+        .table td {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #374151 !important;
+            border-right: 1px solid #374151 !important;
+        }
+
+        .table td:last-child {
+            border-right: none;
+        }
+
+        .table tbody tr:nth-child(even) td {
+            background-color: #1e293b !important;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #324360 !important;
+            color: #fff !important;
+        }
+
+        /* Dropdown địa chỉ & payment */
+        .form-select {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border: 1px solid #374151 !important;
+        }
+
+        .form-select option {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+
+        /* Nút đặt hàng */
+        .btn-success {
+            background-color: #5672b3;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #3b5a9c;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 100px; /* dịch xuống 100px */
+            right: 20px;
+            z-index: 1055;
+        }
+
+        .toast {
+            background-color: #1f2937;
+            color: #f3f4f6;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            min-width: 250px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            opacity: 0.95;
+        }
+
+        .toast-success { border-left: 5px solid #22c55e; }
+        .toast-error { border-left: 5px solid #ef4444; }
+        .toast-warning { border-left: 5px solid #facc15; }
+
+    </style>
+</head>
+<body class="container py-4">
+<div class="header-container" ng-include="'/html/header.html'"></div>
+<h3 class="mb-3">🛒 Xác nhận đơn hàng</h3>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Không có sản phẩm -->
+<div ng-if="vm.items.length === 0">
+    <div class="alert alert-warning">Không có sản phẩm nào được chọn để đặt hàng.</div>
+    <a href="/cart.html" class="btn btn-secondary">⬅ Quay lại giỏ hàng</a>
+</div>
+
+<!-- Có sản phẩm -->
+<div ng-if="vm.items.length > 0">
+    <table class="table table-bordered align-middle">
+        <thead>
+        <tr>
+
+            <th>Sản phẩm</th>
+            <th>Ảnh</th>
+            <th class="text-center">Số lượng</th>
+            <th class="text-end">Đơn giá</th>
+            <th class="text-end">Tổng</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="i in vm.items">
+
+            <td>{{ i.variant.variantName }}</td>
+            <td class="text-center">
+                <img ng-src="{{ i.variant.img }}" alt="{{ i.variant.variantName }}" style="width:80px; height:80px; border-radius:8px;">
+            </td>
+            <td class="text-center">{{ i.qty }}</td>
+            <td class="text-end">{{ i.variant.price | currency:'₫' }}</td>
+            <td class="text-end">{{ i.variant.price * i.qty | currency:'₫' }}</td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th colspan="5" class="text-end">Tổng cộng:</th>
+            <th class="text-end text-danger h5">{{ vm.getTotal() | currency:'₫' }}</th>
+        </tr>
+        </tfoot>
+    </table>
+
+
+    <!-- Địa chỉ -->
+    <div class="mt-4">
+        <h5>📍 Địa chỉ giao hàng</h5>
+        <div class="d-flex align-items-center mb-2">
+            <select class="form-select w-75 me-2" ng-model="vm.selectedAddressId"
+                    ng-options="a.id as (a.recipientName + ' - ' + a.street + ', ' + a.city) for a in vm.addresses">
+                <option value="">-- Chọn địa chỉ giao hàng --</option>
+            </select>
+            <a href="/html/address.html" class="btn btn-outline-primary">➕ Thêm địa chỉ</a>
+
+        </div>
+
+        <div class="mt-3" ng-if="vm.selectedAddressId">
+            <p><strong>Người nhận:</strong> {{ vm.getSelectedAddress().recipientName }}</p>
+            <p><strong>SĐT:</strong> {{ vm.getSelectedAddress().phone }}</p>
+            <p><strong>Địa chỉ:</strong> {{ vm.getSelectedAddress().street }}, {{ vm.getSelectedAddress().city }}</p>
+        </div>
+    </div>
+
+    <!-- Thanh toán -->
+    <div class="mt-4">
+        <h5>💳 Phương thức thanh toán</h5>
+        <select class="form-select w-75" ng-model="vm.selectedPaymentId"
+                ng-options="p.id as p.name for p in vm.payments track by p.id">
+            <option value="">-- Chọn phương thức thanh toán --</option>
+        </select>
+
+    </div>
+
+    <button class="btn btn-success mt-4 px-4" ng-click="vm.confirmOrder()">✅ Xác nhận đặt hàng</button>
+    <a href="/html/cart.html" class="btn btn-outline-secondary mt-4 ms-2">⬅ Quay lại giỏ hàng</a>
+</div>
+
+<script>
+    angular.module('appleShopApp', [])
+        .controller('CheckoutCtrl', ['$http', '$window', '$timeout', function($http, $window, $timeout) {
+            const vm = this;
+
+            // Lấy sản phẩm từ localStorage
+            vm.items = JSON.parse(localStorage.getItem("checkoutItems") || "[]");
+            vm.addresses = [];
+            vm.payments = [];
+            vm.selectedAddressId = null;
+            vm.selectedPaymentId = null;
+
+            // Tính tổng tiền
+            vm.getTotal = () => vm.items.reduce((sum, i) => sum + i.variant.price * i.qty, 0);
+
+            // Lấy địa chỉ
+            function loadAddresses() {
+                $http.get("/api/addresses/me").then(res => vm.addresses = res.data)
+                    .catch(err => showToast("Lỗi khi lấy địa chỉ", "error"));
+            }
+
+            // Lấy phương thức thanh toán
+            function loadPayments() {
+                $http.get("/api/payments").then(res => {
+                    // Lọc ra những payment hợp lệ, chỉ giữ id & name
+                    vm.payments = (res.data || [])
+                        .filter(p => p && p.id != null && p.name)
+                        .map(p => ({id: p.id, name: p.name}));
+
+                    // Thêm COD thủ công
+                    if (!vm.payments.find(p => p.id === 0)) {
+                        vm.payments.push({id: 0, name: "Thanh toán khi nhận hàng (COD)"});
+                    }
+                }).catch(err => {
+                    vm.payments = [{id:0, name:"Thanh toán khi nhận hàng (COD)"}];
+                    showToast("Lỗi khi lấy phương thức thanh toán", "error");
+                });
+            }
+
+
+            // Hàm lấy object address
+            vm.getSelectedAddress = function() {
+                return vm.addresses.find(a => a.id === vm.selectedAddressId);
+            };
+
+            // Toast
+            function showToast(msg, type="success") {
+                const container = document.getElementById("toastContainer");
+                const toast = document.createElement("div");
+                toast.className = `toast toast-${type}`;
+                toast.innerText = msg;
+                container.appendChild(toast);
+                $timeout(() => container.removeChild(toast), 3000);
+            }
+
+            // Xác nhận đặt hàng
+            vm.confirmOrder = function() {
+                const selectedAddress = vm.getSelectedAddress();
+                const selectedPayment = vm.payments.find(p => p.id === vm.selectedPaymentId);
+
+                if (!selectedAddress) { showToast("⚠️ Vui lòng chọn địa chỉ!", "warning"); return; }
+                if (!selectedPayment) { showToast("⚠️ Vui lòng chọn phương thức thanh toán!", "warning"); return; }
+
+                const orderData = {
+                    addressId: selectedAddress.id,
+                    paymentMethodId: selectedPayment.id,
+                    items: vm.items.map(i => ({variantId:i.variant.id, qty:i.qty})),
+                    payment: selectedPayment.id === 0 ? {paymentStatus:"UNPAID", paymentMethod:"COD", paymentDate:new Date().toISOString()} : {}
+                };
+
+                $http.post("/api/orders/create", orderData).then(res => {
+                    showToast("✅ Đặt hàng thành công!", "success");
+                    localStorage.removeItem("checkoutItems");
+                    $timeout(() => $window.location.href = "/html/order.html", 1000);
+                }).catch(err => {
+                    showToast("❌ Đặt hàng thất bại: " + (err.data?.message||"Không rõ nguyên nhân"), "error");
+                });
+            };
+
+            loadAddresses();
+            loadPayments();
+        }]);
+</script>
+<script src="/js/header.js"></script>
+</body>
+</html>

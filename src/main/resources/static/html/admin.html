@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp">
+<head>
+    <meta charset="UTF-8">
+    <title>AppleShop Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+        /* Header cố định trên cùng */
+        .header-container {
+            flex-shrink: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        /* Phần còn lại chia làm 2 cột */
+        .admin-body {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 70px); /* trừ phần header */
+            overflow: hidden;
+        }
+        /* Sidebar trái */
+        .sidebar {
+            width: 250px;
+            background-color: #0f1724;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            flex-shrink: 0;
+            height: 100%;
+        }
+        .sidebar h4 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #495057;
+            color: #fff;
+        }
+        /* Nội dung chính */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+    </style>
+</head>
+
+<body ng-controller="AdminCtrl as vm">
+
+<!-- ✅ HEADER (hiển thị full trên cùng) -->
+<div class="header-container" ng-include="'/html/header.html'"></div>
+
+<!-- ✅ PHẦN CHÍNH (chia 2 cột: sidebar + content) -->
+<div class="admin-body">
+    <!-- MENU TRÁI -->
+    <div class="sidebar">
+        <h4>🍎 AppleShop Admin</h4>
+        <a href="#" ng-click="vm.loadPage('dashboard.html')" ng-class="{active: vm.page === 'dashboard.html'}">Trang chủ</a>
+        <a href="#" ng-click="vm.loadPage('/html/users.html')" ng-class="{active: vm.page === '/html/users.html'}">Quản lý tài khoản</a>
+        <a href="#" ng-click="vm.loadPage('/html/category.html')" ng-class="{active: vm.page === '/html/category.html'}">Quản lý danh mục</a>
+        <a href="#" ng-click="vm.loadPage('/html/sanpham.html')" ng-class="{active: vm.page === '/html/sanpham.html'}">Quản lý sản phẩm</a>
+        <a href="#" ng-click="vm.loadPage('/html/admin-order.html')" ng-class="{active: vm.page === '/html/admin-order.html'}">Quản lý đơn hàng</a>
+
+    </div>
+
+    <!-- NỘI DUNG PHẢI -->
+    <div class="main-content" ng-include="vm.page"></div>
+</div>
+
+<!-- AngularJS -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<!-- Script chính -->
+<script>
+    angular.module('appleShopApp', [])
+        .controller('AdminCtrl', function() {
+            var vm = this;
+            vm.page = 'dashboard.html'; // Trang mặc định
+
+            vm.loadPage = function(p) {
+                vm.page = p;
+            };
+        });
+</script>
+
+<!-- Các script riêng -->
+<script src="/js/sanpham.js"></script>
+<script src="/js/header.js"></script>
+<script src="/js/category.js"></script>
+<script src="/js/users.js"></script>
+<script src="/js/admin-order.js"></script>
+</body>
+</html>

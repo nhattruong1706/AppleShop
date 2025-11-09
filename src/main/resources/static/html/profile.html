@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ sơ cá nhân | AppleShop</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <!-- FIX: Khởi tạo module chính (BẮT BUỘC) -->
+    <script>
+        // Định nghĩa module chính 'appleShopApp' với dependencies (hiện tại là rỗng)
+        angular.module('appleShopApp', []);
+    </script>
+
+    <script src="/js/profile-controller.js"></script>
+
+    <style>
+        /* CSS TOÀN TRANG: DARK THEME */
+        body {
+            background: linear-gradient(#0f1724, #111827); /* Nền tối gradient */
+            color: #fff; /* Màu chữ chính */
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+            padding-top: 40px;
+        }
+        .profile-container {
+            max-width: 650px;
+            margin: 50px auto;
+        }
+        /* Style cho card (Hồ sơ cá nhân) */
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6); /* Bóng tối hơn */
+            background-color: #1f2937; /* Nền card tối */
+            color: #fff;
+        }
+        h2, h3, h4 {
+            font-weight: 600;
+            color: #f3f4f6; /* Màu chữ heading sáng */
+        }
+        label {
+            font-weight: 500;
+        }
+        /* Style cho ô input (form-control) */
+        .form-control {
+            background-color: #0f172a;
+            border-color: white;
+            color: white;
+        }
+        .form-control:focus {
+            background-color: #0f172a;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+            color: white;
+        }
+        /* Primary buttons */
+        .btn-primary {
+            background-color: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+        .btn-primary:hover {
+            background-color: #0c8cd6;
+            border-color: #0c8cd6;
+        }
+        .btn-outline-primary {
+            color: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0ea5e9;
+            color: #fff;
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        /* Header specific styles */
+        .site-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dropdown-menu {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+        }
+        .dropdown-item {
+            color: #f3f4f6;
+        }
+        .dropdown-item:hover {
+            background-color: #374151;
+            color: #fff;
+        }
+    </style>
+</head>
+<body ng-controller="ProfileCtrl">
+
+<!-- Header dùng HeaderCtrl -->
+<div ng-controller="HeaderCtrl as vm" class="site-container mb-4">
+    <div class="d-flex justify-content-between align-items-center py-3">
+        <!-- Logo + Tên -->
+        <a href="/html/index.html" class="d-flex align-items-center gap-3 text-decoration-none">
+            <img src="/img/logo.png" alt="logo" style="height:48px;">
+            <div>
+                <h4 style="margin:0; color:#fff;">AppleShop</h4>
+                <small style="color:#94a3b8;">Sản phẩm chính hãng & chất lượng</small>
+            </div>
+        </a>
+
+        <!-- Search + User + Cart -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Search -->
+            <div>
+                <input type="text" class="form-control"
+                       ng-model="vm.query"
+                       ng-change="vm.debouncedFilter()"
+                       placeholder="Tìm kiếm..." style="max-width: 250px; color: white;" />
+            </div>
+
+            <!-- User dropdown -->
+            <div ng-if="vm.currentUser" class="dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Xin chào, <b>{{vm.currentUser.username}}</b>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/html/profile.html">Trang cá nhân</a></li>
+                    <li><a class="dropdown-item" href="/html/address.html">Địa chỉ giao hàng</a></li>
+                    <li><a class="dropdown-item" href="/html/my-order.html">Đơn hàng</a></li>
+                    <li><a class="dropdown-item" href="/settings.html">Cài đặt</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="" ng-click="vm.logout()">Đăng xuất</a></li>
+                </ul>
+            </div>
+
+            <!-- Login/Signup -->
+            <div ng-if="!vm.currentUser">
+                <a class="btn btn-outline-light btn-sm" href="/login.html">Đăng nhập / Đăng ký</a>
+            </div>
+
+            <!-- Cart -->
+            <div>
+                <a href="/html/cart.html" class="btn btn-outline-light">Giỏ hàng</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="profile-container">
+    <div class="text-center mb-4">
+        <h2>👤 Hồ sơ cá nhân</h2>
+        <p  style="color: white">Cập nhật thông tin tài khoản của bạn</p>
+    </div>
+
+    <!-- Thông báo -->
+    <div ng-if="message" class="alert alert-success text-center" role="alert">
+        {{message}}
+    </div>
+    <div ng-if="errorMessage" class="alert alert-danger text-center" role="alert">
+        {{errorMessage}}
+    </div>
+
+    <!-- Thông tin cá nhân -->
+    <div class="card p-4 mb-4">
+        <h4 class="mb-3">Thông tin cơ bản</h4>
+        <form ng-submit="updateProfile()">
+            <div class="mb-3">
+                <label>Họ và tên</label>
+                <input type="text" class="form-control" ng-model="user.fullName" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" class="form-control" ng-model="user.email" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Số điện thoại</label>
+                <input type="text" class="form-control" ng-model="user.phone">
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Đổi mật khẩu -->
+    <div class="card p-4">
+        <h4 class="mb-3">Đổi mật khẩu</h4>
+        <div class="mb-3">
+            <label>Mật khẩu cũ</label>
+            <input type="password" class="form-control" ng-model="passwordData.oldPassword" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Mật khẩu mới</label>
+            <input type="password" class="form-control" ng-model="passwordData.newPassword" required>
+        </div>
+
+        <div class="text-end">
+            <button class="btn btn-outline-primary px-4" ng-click="changePassword()">Đổi mật khẩu</button>
+        </div>
+
+        <div ng-if="messagePwd" class="alert alert-info text-center mt-3">
+            {{messagePwd}}
+        </div>
+    </div>
+</div>
+<script>
+    angular.module('appleShopApp')
+        .controller('HeaderCtrl', ['$http', '$window', '$timeout', function($http, $window, $timeout) {
+            const vm = this;
+            vm.currentUser = null;
+            vm.query = '';
+            let searchTimeout = null;
+
+            // 1. Load thông tin user
+            vm.loadUser = function() {
+                $http.get('/api/auth/me', {withCredentials: true})
+                    .then(resp => {
+                        vm.currentUser = resp.data;
+                        console.log('User load successful, data:', vm.currentUser);
+                        // Log đã cho thấy user được tải thành công
+                    })
+                    .catch(err => {
+                        vm.currentUser = null;
+                        console.error('Failed to load user info. Status:', err.status, 'Error data:', err.data);
+                    });
+            };
+
+            // 2. Logout người dùng
+            vm.logout = function() {
+                $http.post('/api/auth/logout', {}, {withCredentials: true})
+                    .then(() => {
+                        vm.currentUser = null;
+                        $window.location.href = '/login.html';
+                    })
+                    .catch(err => console.error("Lỗi khi đăng xuất:", err));
+            };
+
+            // 3. Hàm giả lập cho debounce tìm kiếm (chưa có chức năng lọc sản phẩm)
+            vm.debouncedFilter = function() {
+                if (searchTimeout) $timeout.cancel(searchTimeout);
+                searchTimeout = $timeout(() => {
+                    // TODO: Triển khai logic lọc sản phẩm trong MainCtrl/Product Service
+                    console.log('Search triggered with query:', vm.query);
+                }, 300);
+            };
+
+            vm.init = function() {
+                vm.loadUser();
+            };
+
+            vm.init();
+        }]);
+
+</script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

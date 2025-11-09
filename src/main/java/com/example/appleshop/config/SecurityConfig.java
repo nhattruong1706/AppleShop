@@ -30,6 +30,7 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/users",
                                 "/api/products",
+                                "/api/categories",
                                 "/api/auth/logout",
                                 "/api/auth/me",
                                 "/html/dangnhap.html",

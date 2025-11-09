@@ -218,6 +218,8 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li><a class="dropdown-item" href="/profile.html">Trang cá nhân</a></li>
+                    <li><a class="dropdown-item" href="/html/address.html">Địa chỉ giao hàng</a></li>
+                    <li><a class="dropdown-item" href="/html/my-order.html">Đơn hàng</a></li>
                     <li><a class="dropdown-item" href="/settings.html">Cài đặt</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="" ng-click="vm.logout()">Đăng xuất</a></li>
@@ -240,8 +242,11 @@
 <div class="container mt-5 product-detail" ng-if="vm.product" style="max-width: 900px;">
     <div class="row">
         <div class="col-md-5 text-center">
-            <img ng-src="{{vm.API_BASE + (vm.selectedVariant && vm.selectedVariant.img ? vm.selectedVariant.img : vm.product.img)}}"
+            <img ng-src="{{(vm.selectedVariant && vm.selectedVariant.img
+                ? (vm.selectedVariant.img.startsWith('http') ? vm.selectedVariant.img : vm.API_BASE + vm.selectedVariant.img)
+                : (vm.product.img.startsWith('http') ? vm.product.img : vm.API_BASE + vm.product.img))}}"
                  alt="{{vm.product.name}}">
+
         </div>
 
         <div class="col-md-7">

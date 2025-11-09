@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đặt hàng thành công - AppleShop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #0f1724, #1e293b);
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .success-container {
+            background-color: #1f2937;
+            padding: 50px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .success-container h1 {
+            font-size: 3rem;
+            color: #22c55e;
+            margin-bottom: 20px;
+        }
+
+        .success-container p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-order {
+            font-size: 1.2rem;
+            padding: 12px 30px;
+            border-radius: 12px;
+            background-color: #5672b3;
+            color: #fff;
+            border: none;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-order:hover {
+            background-color: #3b5a9c;
+            color: #fff;
+        }
+
+        @media (max-width: 576px) {
+            .success-container h1 {
+                font-size: 2.2rem;
+            }
+            .btn-order {
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="success-container">
+    <h1>✅ Đặt hàng thành công!</h1>
+    <p>Cảm ơn bạn đã mua sắm tại AppleShop. Đơn hàng của bạn đã được ghi nhận và đang chờ xử lý.</p>
+    <a href="/html/my-order.html" class="btn-order">Xem đơn hàng của tôi</a>
+</div>
+</body>
+</html>

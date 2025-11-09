@@ -1,26 +1,161 @@
-<!doctype html>
-<html lang="en" ng-app="appleShopApp">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>AppleShop Admin (AngularJS)</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body { padding-top: 20px; }
-        .card { margin-bottom: 12px; }
-        .pointer { cursor: pointer; }
-        .small-muted { font-size: 0.9rem; color: #6c757d; }
-        img.preview { max-height: 100px; display: block; margin-top: 8px; }
-    </style>
-</head>
-<body ng-controller="MainCtrl as vm">
-<div class="container">
+<!-- ⚠️ ĐÃ GỠ <!doctype html>, <html>, <head>, <body>, ng-app, import Angular -->
+<div class="container" ng-controller="MainCtrl as vm">
     <div class="row">
         <div class="col-12 mb-3">
-            <h2>AppleShop Admin (AngularJS)</h2>
-            <p class="small-muted">Manage Products and Variants. Backend API: <code>{{vm.API_BASE}}</code></p>
+            <h2>AppleShop Admin Quản Lý Sản Phẩm</h2>
+            <p class="small-muted">Manage Products and Variants</p>
         </div>
     </div>
+    <style>
+        /* 🌿 Toàn trang */
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f9fb;
+            color: #333;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1300px;
+            margin-top: 30px;
+        }
+
+        /* Tiêu đề chính */
+        h2 {
+            font-weight: 700;
+            color: #222;
+        }
+        .small-muted {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* 🧱 Card tổng thể */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            background-color: #fff;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .card-header {
+            background-color: #f3f5f7;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #444;
+        }
+
+        /* Form controls */
+        .form-control, .form-select, .form-control-file {
+            border-radius: 10px;
+            border: 1px solid #d0d7de;
+            padding: 8px 12px;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+        }
+
+        /* Label */
+        label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        /* Preview ảnh */
+        .preview {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        /* Button */
+        .btn {
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0069d9;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            border: none;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-outline-secondary {
+            border-radius: 8px;
+        }
+
+        /* List group (sản phẩm + biến thể) */
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #eee;
+            padding: 12px 15px;
+        }
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        .list-group-item:hover {
+            background-color: #fafafa;
+        }
+
+        /* Nút trong danh sách */
+        .list-group-item .btn {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+
+        /* 🧩 Khối variant form */
+        #variantFormSection {
+            scroll-margin-top: 20px;
+        }
+
+        /* Responsive chỉnh nhẹ cho mobile */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .card {
+                border-radius: 10px;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
 
     <div class="row">
         <!-- LEFT: Product list & create -->
@@ -42,17 +177,6 @@
                             <textarea class="form-control" ng-model="vm.productForm.description"></textarea>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group col">
-                                <label>Price (VND)</label>
-                                <input type="number" class="form-control" ng-model="vm.productForm.price" required>
-                            </div>
-                            <div class="form-group col">
-                                <label>Stock</label>
-                                <input type="number" class="form-control" ng-model="vm.productForm.stock" required>
-                            </div>
-                        </div>
-
                         <div class="form-group">
                             <label>Category</label>
                             <select class="form-control"
@@ -67,7 +191,8 @@
                             <label>Product Image</label>
                             <input type="file" class="form-control-file"
                                    onchange="angular.element(this).scope().vm.onProductImageSelect(this.files)">
-                            <img ng-if="vm.productForm.img" ng-src="{{vm.API_BASE + vm.productForm.img}}" class="preview rounded mt-2" style="max-width:150px;">
+                            <img ng-if="vm.productForm.img" ng-src="{{vm.productForm.img}}" class="preview rounded mt-2" style="max-width:150px;">
+
                         </div>
 
                         <div class="d-flex justify-content-between">
@@ -97,9 +222,10 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="p in vm.products track by p.id">
                             <div>
                                 <div class="font-weight-bold">{{p.name}}</div>
-                                <div class="small-muted">{{p.description}}</div>
-                                <div class="small-muted">Price: {{p.price | currency:'₫':0}} • Stock: {{p.stock}}</div>
-                                <img ng-if="p.img" ng-src="{{vm.API_BASE + p.img}}" class="preview rounded">
+                                <img ng-if="p.img"
+                                     ng-src="{{p.img.startsWith('http') ? p.img : (vm.API_BASE + p.img)}}"
+                                     class="preview rounded">
+
                             </div>
                             <div class="text-right">
                                 <button class="btn btn-sm btn-info mb-1" ng-click="vm.selectProduct(p)">Variants</button>
@@ -112,10 +238,70 @@
             </div>
         </div>
 
-
-
-        <!-- RIGHT: Selected product variants -->
+        <!-- RIGHT: Variants -->
         <div class="col-md-6">
+            <!-- KHỐI 1: FORM THÊM/SỬA VARIANT -->
+            <div class="card mb-4" ng-if="vm.selectedProduct" id="variantFormSection">
+                <div class="card-body p-4">
+                    <div>
+                        <h6>{{vm.editingVariant ? 'Edit Variant' : 'Add New Variant'}}</h6>
+                        <form name="variantForm" ng-submit="vm.saveVariant()" novalidate>
+                            <div class="form-group mb-3">
+                                <label>Variant Name</label>
+                                <input type="text" class="form-control" ng-model="vm.variantForm.variantName" required>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="form-group col-md-6">
+                                    <label>Color</label>
+                                    <input type="text" class="form-control" ng-model="vm.variantForm.color">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Storage</label>
+                                    <input type="text" class="form-control" ng-model="vm.variantForm.storage">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="form-group col-md-6">
+                                    <label>Price</label>
+                                    <input type="number" class="form-control" ng-model="vm.variantForm.price" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Stock</label>
+                                    <input type="number" class="form-control" ng-model="vm.variantForm.stock" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label>Variant Image</label>
+                                <input type="file" class="form-control"
+                                       onchange="angular.element(this).scope().vm.onVariantImageSelect(this.files)">
+                                <div ng-if="vm.variantForm.img" class="mt-2">
+                                    <img ng-if="vm.variantForm.img"
+                                         ng-src="{{vm.variantForm.img}}"
+                                         width="120" height="120"
+                                         class="rounded shadow-sm border"
+                                         style="object-fit: cover;">
+
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2">
+                                <div>
+                                    <button class="btn btn-success" type="submit" ng-disabled="variantForm.$invalid">
+                                        {{vm.editingVariant ? 'Update Variant' : 'Add Variant'}}
+                                    </button>
+                                    <button class="btn btn-secondary ms-2" type="button" ng-click="vm.resetVariantForm()">Cancel/New</button>
+                                </div>
+                                <small class="text-muted">{{vm.variantMessage}}</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI 2: DANH SÁCH VARIANT -->
             <div class="card" ng-if="vm.selectedProduct">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
@@ -129,75 +315,26 @@
                     <div ng-if="vm.loadingVariants" class="text-center p-3">Loading variants...</div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="v in vm.variants track by v.id">
-                            <div>
-                                <div class="font-weight-bold">{{v.variantName}}</div>
-                                <div class="small-muted">{{v.color}} • {{v.storage}} • {{v.price | currency:'₫':0}}</div>
-                                <!-- SỬA IMG -->
-                                <img ng-if="v.img" ng-src="{{vm.API_BASE + v.img}}" class="preview rounded">
+                            <div class="d-flex align-items-center">
+                                <img ng-if="v.img"
+                                     ng-src="{{v.img.startsWith('http') ? v.img : (vm.API_BASE + v.img)}}"
+                                     class="preview rounded me-3"
+                                     style="width: 80px; height: 80px; object-fit: cover;">
+
+                                <div>
+                                    <div class="font-weight-bold">{{v.variantName}}</div>
+                                    <div class="small-muted">{{v.color}} • {{v.storage}} • {{v.price | currency:'₫':0}}</div>
+                                </div>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-primary mb-1" ng-click="vm.editVariant(v)">Edit</button>
+                                <button class="btn btn-sm btn-primary mb-1"
+                                        ng-click="vm.editVariant(v); vm.scrollToForm();">
+                                    Edit
+                                </button>
                                 <button class="btn btn-sm btn-danger" ng-click="vm.deleteVariant(v)">Delete</button>
                             </div>
                         </li>
                     </ul>
-
-                    <hr>
-
-                    <div>
-                        <h6>{{vm.editingVariant ? 'Edit Variant' : 'Add Variant'}}</h6>
-                        <form name="variantForm" ng-submit="vm.saveVariant()" novalidate>
-                            <div class="form-group">
-                                <label>Variant Name</label>
-                                <input type="text" class="form-control" ng-model="vm.variantForm.variantName" required>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group col">
-                                    <label>Color</label>
-                                    <input type="text" class="form-control" ng-model="vm.variantForm.color">
-                                </div>
-                                <div class="form-group col">
-                                    <label>Storage</label>
-                                    <input type="text" class="form-control" ng-model="vm.variantForm.storage">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group col">
-                                    <label>Price</label>
-                                    <input type="number" class="form-control" ng-model="vm.variantForm.price" required>
-                                </div>
-                                <div class="form-group col">
-                                    <label>Stock</label>
-                                    <input type="number" class="form-control" ng-model="vm.variantForm.stock" required>
-                                </div>
-                            </div>
-
-                            <!-- Upload ảnh variant -->
-                            <div class="form-group">
-                                <label>Variant Image</label>
-                                <input type="file" class="form-control-file"
-                                       onchange="angular.element(this).scope().vm.onVariantImageSelect(this.files)">
-                                <div ng-if="vm.variantForm.img" class="mt-2">
-                                    <img ng-src="{{vm.API_BASE + vm.variantForm.img}}"
-                                         width="120" height="120"
-                                         class="rounded shadow-sm border"
-                                         style="object-fit: cover;">
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <button class="btn btn-success" type="submit" ng-disabled="variantForm.$invalid">
-                                        {{vm.editingVariant ? 'Update' : 'Add'}}
-                                    </button>
-                                    <button class="btn btn-secondary ml-2" type="button" ng-click="vm.resetVariantForm()">Reset</button>
-                                </div>
-                                <small class="text-muted">{{vm.variantMessage}}</small>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
 
@@ -210,124 +347,4 @@
     </div>
 </div>
 
-<!-- AngularJS -->
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-<script>
-    (function() {
-        angular.module('appleShopApp', [])
-            .constant('API_BASE', window.API_BASE || 'http://localhost:8080')
-            .controller('MainCtrl', ['$http', '$scope', 'API_BASE', function($http, $scope, API_BASE) {
-                var vm = this;
-                vm.API_BASE = API_BASE;
-
-                vm.products = [];
-                vm.loadingProducts = false;
-                vm.productForm = {};
-                vm.editingProduct = false;
-                vm.productMessage = '';
-
-                vm.uploadingProductImage = false;
-                vm.uploadingVariantImage = false;
-
-                vm.selectedProduct = null;
-                vm.variants = [];
-                vm.variantForm = {};
-                vm.editingVariant = false;
-                vm.variantMessage = '';
-
-                // LOAD PRODUCTS
-                vm.loadProducts = function() {
-                    vm.loadingProducts = true;
-                    $http.get(API_BASE + '/api/products')
-                        .then(res => vm.products = res.data)
-                        .catch(() => alert('❌ Lỗi tải danh sách sản phẩm!'))
-                        .finally(() => vm.loadingProducts = false);
-                };
-
-                // UPLOAD PRODUCT IMAGE
-                vm.onProductImageSelect = function(files) {
-                    if (!files || !files[0] || vm.uploadingProductImage) return;
-                    vm.uploadingProductImage = true;
-                    let formData = new FormData();
-                    formData.append("file", files[0]);
-                    $http.post(API_BASE + '/api/upload/image', formData, { headers: { 'Content-Type': undefined } })
-                        .then(res => vm.productForm.img = res.data.url)
-                        .catch(err => { console.error(err); alert('❌ Upload ảnh sản phẩm thất bại!'); })
-                        .finally(() => vm.uploadingProductImage = false);
-                };
-
-                // LOAD CATEGORIES
-                vm.categories = [];
-                vm.loadCategories = function() {
-                    $http.get(API_BASE + '/api/categories')
-                        .then(res => vm.categories = res.data)
-                        .catch(err => console.error(err));
-                };
-
-                // SAVE PRODUCT
-                vm.saveProduct = function() {
-                    const url = vm.editingProduct ? API_BASE + '/api/products/' + vm.productForm.id : API_BASE + '/api/products';
-                    const method = vm.editingProduct ? 'put' : 'post';
-                    $http[method](url, vm.productForm)
-                        .then(() => { vm.productMessage = vm.editingProduct ? '✅ Cập nhật thành công' : '✅ Thêm mới thành công'; vm.resetProductForm(); vm.loadProducts(); })
-                        .catch(() => alert('❌ Lưu sản phẩm thất bại!'));
-                };
-
-                vm.editProduct = p => {
-                    vm.editingProduct = true;
-                    vm.productForm = angular.copy(p);
-                    // 🔹 Cuộn lên đầu trang khi bấm Edit Product
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-                vm.resetProductForm = () => { vm.editingProduct = false; vm.productForm = {}; vm.productMessage = ''; };
-                vm.deleteProduct = p => { if(confirm('Xóa sản phẩm "' + p.name + '"?')) $http.delete(API_BASE + '/api/products/' + p.id).then(() => vm.loadProducts()); };
-
-                // VARIANTS
-                vm.selectProduct = p => {
-                    vm.selectedProduct = p;
-                    vm.loadVariants(p.id);
-                    // 🔹 Cuộn lên đầu trang khi chọn sản phẩm để xem variants
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-
-                vm.closeVariants = () => { vm.selectedProduct = null; vm.variants = []; };
-                vm.loadVariants = id => { $http.get(API_BASE + '/api/products/' + id + '/variants').then(res => vm.variants = res.data).catch(() => alert('❌ Lỗi tải biến thể!')); };
-
-                // UPLOAD VARIANT IMAGE
-                vm.onVariantImageSelect = function(files) {
-                    if (!files || !files[0] || vm.uploadingVariantImage) return;
-                    vm.uploadingVariantImage = true;
-                    let formData = new FormData();
-                    formData.append("file", files[0]);
-                    $http.post(API_BASE + '/api/upload/image', formData, { headers: { 'Content-Type': undefined } })
-                        .then(res => vm.variantForm.img = res.data.url)
-                        .catch(err => { console.error(err); alert('❌ Upload ảnh biến thể thất bại!'); })
-                        .finally(() => vm.uploadingVariantImage = false);
-                };
-
-                // SAVE VARIANT
-                vm.saveVariant = function() {
-                    if (!vm.selectedProduct) return alert('⚠️ Hãy chọn sản phẩm trước!');
-                    const url = vm.editingVariant ? API_BASE + '/api/products/variants/' + vm.variantForm.id : API_BASE + '/api/products/' + vm.selectedProduct.id + '/variants';
-                    const method = vm.editingVariant ? 'put' : 'post';
-                    $http[method](url, vm.variantForm)
-                        .then(() => { vm.variantMessage = vm.editingVariant ? '✅ Cập nhật biến thể' : '✅ Thêm biến thể'; vm.resetVariantForm(); vm.loadVariants(vm.selectedProduct.id); })
-                        .catch(() => alert('❌ Lưu biến thể thất bại!'));
-                };
-
-                vm.editVariant = v => {
-                    vm.editingVariant = true;
-                    vm.variantForm = angular.copy(v);
-
-                };
-                vm.resetVariantForm = () => { vm.editingVariant = false; vm.variantForm = {}; vm.variantMessage = ''; };
-                vm.deleteVariant = v => { if(confirm('Xóa biến thể "' + v.variantName + '"?')) $http.delete(API_BASE + '/api/products/variants/' + v.id).then(() => vm.loadVariants(vm.selectedProduct.id)); };
-
-                // INIT
-                vm.loadProducts();
-                vm.loadCategories();
-            }]);
-    })();
-</script>
-</body>
-</html>
+<!-- ⚙️ SCRIPT: chỉ đổi dòng khởi tạo module -->

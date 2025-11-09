@@ -1,0 +1,114 @@
+<!-- HEADER -->
+<div ng-controller="HeaderCtrl as hd" style="
+    width: 100%;
+    background-color: #0f1724;
+    border-bottom: 1px solid #1e293b;
+    padding: 6px 0;
+    margin: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+">
+    <style>
+        body {
+            margin: 0;
+            padding-top: 54px; /* chừa chỗ cho header cố định */
+            background-color: #f8fafc;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 150px;
+            flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left img {
+            height: 36px;
+        }
+        .header-left h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 17px;
+        }
+        .header-left small {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            width: 220px;
+            background-color: #1e293b;
+            color: #fff;
+            border: 1px solid #2d3748;
+            height: 32px;
+            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        .btn-outline-light.btn-sm {
+            padding: 3px 8px;
+            font-size: 13px;
+            border-color: #94a3b8;
+            color: #fff;
+        }
+        .btn-outline-light:hover {
+            background-color: #1e293b;
+        }
+    </style>
+
+    <div class="header-container">
+        <!-- Logo + Tên -->
+        <div class="header-left">
+            <img src="/img/logo.png" alt="logo">
+            <div>
+                <h4><a href="/html/index.html" style="text-decoration: none; color: white">AppleShop</a> </h4>
+                <small>Sản phẩm chính hãng & chất lượng</small>
+            </div>
+        </div>
+
+        <!-- Search + User + Cart -->
+        <div class="header-right">
+            <input type="text" class="form-control search-input"
+                   ng-model="hd.query"
+                   ng-change="hd.onSearchChange()"
+                   placeholder="Tìm kiếm sản phẩm..." />
+
+            <div ng-if="hd.currentUser" class="dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{hd.currentUser.username}}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="/html/profile.html">Thông tin cá nhân</a></li>
+                    <li><a class="dropdown-item" href="/html/address.html">Địa chỉ giao hàng</a></li>
+                    <li><a class="dropdown-item" href="/html/my-order.html">Đơn hàng</a></li>
+                    <li><a class="dropdown-item" href="/settings.html">Cài đặt</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="" ng-click="hd.logout()">Đăng xuất</a></li>
+                </ul>
+            </div>
+
+            <div ng-if="!hd.currentUser">
+                <a class="btn btn-outline-light btn-sm" href="/login.html">Đăng nhập</a>
+            </div>
+
+            <a href="/html/cart.html" class="btn btn-outline-light btn-sm">Giỏ hàng</a>
+        </div>
+    </div>
+</div>

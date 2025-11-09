@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi" ng-app="appleShopApp" ng-controller="UserOrderController as vm">
+<head>
+    <meta charset="UTF-8">
+    <title>Đơn hàng của tôi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(#0f1724, #111827);
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            padding-top: 40px;
+        }
+
+        .container h2 {
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Bảng nền tối */
+        .table {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #374151 !important;
+        }
+
+        .table th {
+            background-color: #506aa2 !important;
+            color: #fff !important;
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #374151 !important;
+        }
+
+        .table td {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #374151 !important;
+            border-right: 1px solid #374151 !important;
+        }
+
+        .table td:last-child {
+            border-right: none;
+        }
+
+        .table tbody tr:nth-child(even) td {
+            background-color: #1e293b !important;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #324360 !important;
+            color: #fff !important;
+        }
+
+        /* Badge trạng thái */
+        .badge {
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .badge.bg-warning { background-color: #facc15; color: #1f2937; }
+        .badge.bg-success { background-color: #22c55e; }
+        .badge.bg-info { background-color: #38bdf8; color: #1f2937; }
+        .badge.bg-primary { background-color: #5672b3; }
+        .badge.bg-danger { background-color: #ef4444; }
+
+        /* Nút Xem / Hủy */
+        .btn-outline-primary {
+            background-color: #5672b3 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 8px;
+            padding: 5px 12px;
+            transition: 0.2s;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #324360 !important;
+        }
+
+        .btn-outline-danger {
+            background-color: #ef4444 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 8px;
+            padding: 5px 12px;
+            transition: 0.2s;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #c53030 !important;
+        }
+
+        /* Modal */
+        .modal-content {
+            background: #1f2937;
+            color: #f3f4f6;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+
+        .modal-header {
+            background: #5672b3;
+            color: #fff;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 1px solid #374151;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #374151;
+        }
+
+        .modal-body hr {
+            border-color: #374151;
+        }
+
+        .total-amount {
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* Toast container */
+        .toast-body {
+            color: #030303;
+            background-color: #0ff175;
+        }
+        .toast-header {
+            background-color: #57f15e;
+            color: #000000;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="header-container" ng-include="'/html/header.html'"></div>
+
+<!-- Toast container -->
+<div class="position-fixed end-0 p-3" style="z-index: 1055; top: 70px;">
+    <div id="toastContainer"></div>
+</div>
+<div class="container py-4">
+    <h2 class="text-center mb-4">🛒 Đơn hàng của tôi</h2>
+
+    <div class="card shadow-sm bg-dark border-0">
+        <div class="card-body">
+            <table class="table table-bordered align-middle text-center">
+                <thead>
+                <tr>
+                    <th>Địa chỉ giao</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="order in vm.orders">
+                    <td>{{order.street || '-'}}</td>
+                    <td>{{order.totalAmount | currency:'₫':0}}</td>
+                    <td>
+                        <span class="badge bg-warning text-dark" ng-if="order.status === 'PENDING'">Chờ xác nhận</span>
+                        <span class="badge bg-success" ng-if="order.status === 'CONFIRMED'">Đã xác nhận</span>
+                        <span class="badge bg-info text-dark" ng-if="order.status === 'SHIPPING'">Đang giao hàng</span>
+                        <span class="badge bg-primary" ng-if="order.status === 'SUCCESS'">Hoàn thành</span>
+                        <span class="badge bg-danger" ng-if="order.status === 'CANCELLED'">Đã hủy</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm" ng-click="vm.viewDetails(order)">
+                            👁 Xem
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm ms-2"
+                                ng-if="order.status === 'PENDING'"
+                                ng-click="vm.cancelOrder(order)">
+                            ❌ Hủy
+                        </button>
+                    </td>
+                </tr>
+                <tr ng-if="!vm.orders.length">
+                    <td colspan="4" class="text-muted">Bạn chưa có đơn hàng nào</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal chi tiết đơn hàng -->
+    <div class="modal fade" id="orderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết đơn hàng #{{vm.selectedOrder.id}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" ng-if="vm.selectedOrder">
+                    <p><strong>Địa chỉ giao:</strong> {{vm.selectedOrder.address.street}}, {{vm.selectedOrder.address.city}}</p>
+                    <p><strong>Trạng thái:</strong>
+                        <span class="badge bg-warning text-dark" ng-if="vm.selectedOrder.status === 'PENDING'">Chờ xác nhận</span>
+                        <span class="badge bg-success" ng-if="vm.selectedOrder.status === 'CONFIRMED'">Đã xác nhận</span>
+                        <span class="badge bg-info text-dark" ng-if="vm.selectedOrder.status === 'SHIPPING'">Đang giao hàng</span>
+                        <span class="badge bg-primary" ng-if="vm.selectedOrder.status === 'SUCCESS'">Hoàn thành</span>
+                        <span class="badge bg-danger" ng-if="vm.selectedOrder.status === 'CANCELLED'">Đã hủy</span>
+                    </p>
+                    <hr>
+                    <h6>Danh sách sản phẩm:</h6>
+                    <table class="table table-sm table-striped text-center">
+                        <thead>
+                        <tr>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Giá</th>
+                            <th>Tổng</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="item in vm.selectedOrder.items">
+                            <td>{{item.variantName}}</td>
+                            <td>{{item.qty}}</td>
+                            <td>{{item.price | currency:'₫':0}}</td>
+                            <td>{{item.qty * item.price | currency:'₫':0}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end fw-bold mt-3 total-amount">
+                        Tổng cộng: {{vm.selectedOrder.totalAmount | currency:'₫':0}}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" ng-if="vm.selectedOrder.status === 'PENDING'"
+                            ng-click="vm.cancelOrder(vm.selectedOrder)">
+                        ❌ Hủy đơn hàng
+                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    angular.module('appleShopApp', [])
+        .controller('UserOrderController', ['$http', function($http) {
+            const vm = this;
+            vm.orders = [];
+            vm.selectedOrder = null;
+
+            vm.loadOrders = function() {
+                $http.get('http://localhost:8080/api/orders')
+                    .then(resp => vm.orders = resp.data)
+                    .catch(err => vm.showToast('❌ Lỗi khi tải đơn hàng!', 'error'));
+            };
+
+            vm.viewDetails = function(order) {
+                $http.get(`http://localhost:8080/api/orders/${order.id}/variants`)
+                    .then(resp => {
+                        vm.selectedOrder = {
+                            id: order.id,
+                            totalAmount: order.totalAmount,
+                            status: order.status,
+                            address: { street: order.street, city: order.city },
+                            items: resp.data
+                        };
+                        const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+                        modal.show();
+                    })
+                    .catch(err => vm.showToast('❌ Lỗi khi tải chi tiết đơn hàng!', 'error'));
+            };
+
+            vm.cancelOrder = function(order) {
+                if (order.status !== 'PENDING') {
+                    vm.showToast('❌ Không thể hủy đơn hàng đã xác nhận hoặc đang giao.', 'error');
+                    return;
+                }
+                if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+
+                $http.put(`http://localhost:8080/api/orders/${order.id}/cancel`)
+                    .then(resp => {
+                        vm.showToast(resp.data.message, 'success');
+                        vm.loadOrders();
+                        if (vm.selectedOrder && vm.selectedOrder.id === order.id) {
+                            vm.selectedOrder.status = 'CANCELLED';
+                        }
+                    })
+                    .catch(err => vm.showToast('❌ Lỗi khi hủy đơn hàng!', 'error'));
+            };
+
+            // Toast notification
+            vm.showToast = function(message, type='info') {
+                const container = document.getElementById('toastContainer');
+                const toastEl = document.createElement('div');
+                toastEl.className = 'toast align-items-center text-white border-0';
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+                container.appendChild(toastEl);
+                const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                bsToast.show();
+                toastEl.addEventListener('hidden.bs.toast', () => container.removeChild(toastEl));
+            };
+
+            vm.loadOrders();
+        }]);
+</script>
+<script src="/js/header.js"></script>
+</body>
+</html>

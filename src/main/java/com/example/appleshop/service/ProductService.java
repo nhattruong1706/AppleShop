@@ -30,7 +30,6 @@ public class ProductService {
     }
 
     public Product createProduct(Product product) {
-        // Không lưu variant ở đây, chỉ lưu sản phẩm
         return productRepository.save(product);
     }
 
@@ -39,8 +38,6 @@ public class ProductService {
 
         existing.setName(updatedProduct.getName());
         existing.setDescription(updatedProduct.getDescription());
-        existing.setPrice(updatedProduct.getPrice());
-        existing.setStock(updatedProduct.getStock());
         existing.setImg(updatedProduct.getImg());
         existing.setCategory(updatedProduct.getCategory());
 
@@ -65,7 +62,6 @@ public class ProductService {
     }
 
     public List<ProductVariant> getVariantsByProduct(Long productId) {
-        // Kiểm tra product có tồn tại không
         getProductById(productId);
         return variantRepository.findByProductId(productId);
     }

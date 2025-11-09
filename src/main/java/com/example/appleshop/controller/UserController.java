@@ -2,6 +2,7 @@
 package com.example.appleshop.controller;
 
 import com.example.appleshop.entity.UserEntity;
+import com.example.appleshop.repository.UserRepository;
 import com.example.appleshop.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private UserRepository userRepository;
     // Lấy tất cả users
     @GetMapping
     public List<UserEntity> getAllUsers() {
@@ -30,6 +32,10 @@ public class UserController {
     public ResponseEntity<String> whoAmI() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(username);
+    }
+    @GetMapping("/search")
+    public List<UserEntity> searchUsers(@RequestParam String username) {
+        return userRepository.findByUsernameContainingIgnoreCase(username);
     }
 
     // Lấy user theo id

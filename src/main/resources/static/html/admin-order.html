@@ -1,0 +1,99 @@
+<div ng-controller="AdminOrderController as vm" class="container py-3">
+
+    <h2 class="mb-4 text-center">📦 Quản lý đơn hàng</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <h4>📦 Danh sách đơn hàng</h4>
+        <button class="btn btn-danger btn-sm" ng-click="vm.deleteCancelledOrders()">🗑 Xóa tất cả đơn hàng đã hủy</button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Địa chỉ giao</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="order in vm.orders">
+                    <td>{{order.id}}</td>
+                    <td>{{order.userName || '-'}}</td>
+                    <td>{{order.totalAmount | currency:'₫':0}}</td>
+                    <td>
+                        <div ng-if="order.street || order.city">{{order.street}}, {{order.city}}</div>
+                        <div ng-if="!order.street && !order.city">-</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-warning text-dark" ng-if="order.status === 'PENDING'">Chờ xác nhận</span>
+                        <span class="badge bg-success" ng-if="order.status === 'CONFIRMED'">Đã xác nhận</span>
+                        <span class="badge bg-info text-dark" ng-if="order.status === 'SHIPPING'">Đang giao hàng</span>
+                        <span class="badge bg-primary" ng-if="order.status === 'SUCCESS'">Hoàn thành</span>
+                        <span class="badge bg-danger" ng-if="order.status === 'CANCELLED'">Đã hủy</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-success btn-sm me-1" ng-if="order.status === 'PENDING'"
+                                ng-click="vm.updateStatus(order.id, 'CONFIRMED')">✔ Xác nhận</button>
+                        <button class="btn btn-info btn-sm text-white me-1" ng-if="order.status === 'CONFIRMED'"
+                                ng-click="vm.updateStatus(order.id, 'SHIPPING')">🚚 Giao hàng</button>
+                        <button class="btn btn-primary btn-sm me-1" ng-if="order.status === 'SHIPPING'"
+                                ng-click="vm.updateStatus(order.id, 'SUCCESS')">✅ Hoàn thành</button>
+                        <button class="btn btn-danger btn-sm me-1" ng-if="order.status !== 'CANCELLED' && order.status !== 'SUCCESS'"
+                                ng-click="vm.cancelOrder(order.id)">✖ Hủy</button>
+                        <button class="btn btn-secondary btn-sm" ng-click="vm.showOrderItems(order.id)">👁️ Xem</button>
+                    </td>
+                </tr>
+                <tr ng-if="vm.orders.length === 0">
+                    <td colspan="6" class="text-muted py-3">Chưa có đơn hàng nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal xem sản phẩm variant -->
+    <div class="modal fade" id="orderItemsModal" tabindex="-1" aria-labelledby="orderItemsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🛒 Chi tiết đơn hàng #{{vm.selectedOrderId}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Sản phẩm</th>
+                            <th>Variant</th>
+                            <th>Số lượng</th>
+                            <th>Giá</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="item in vm.selectedOrderItems">
+                            <td>
+                                <img ng-src="{{item.variantImg}}" width="60" alt="variant"
+                                     onerror="this.src='/img/default.png'">
+                            </td>
+                            <td>{{item.productName}}</td>
+                            <td>{{item.variantName}}</td>
+                            <td>{{item.qty}}</td>
+                            <td>{{item.price | currency:'₫':0}}</td>
+                        </tr>
+                        <tr ng-if="!vm.selectedOrderItems.length">
+                            <td colspan="5" class="text-muted">Chưa có sản phẩm</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

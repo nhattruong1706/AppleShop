@@ -1,0 +1,67 @@
+<div class="container py-4" ng-controller="UserController">
+    <h3 class="fw-bold mb-4 text-center">👥 Quản lý tài khoản</h3>
+
+    <!-- Thanh tìm kiếm -->
+    <div class="card p-3 mb-4 shadow-sm border-0">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <input type="text" class="form-control" ng-model="searchUsername"
+                       placeholder="Nhập username cần tìm...">
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary px-4" ng-click="searchUser()">
+                    <i class="bi bi-search"></i> Tìm kiếm
+                </button>
+                <button class="btn btn-secondary ms-2" ng-click="loadUsers()">
+                    <i class="bi bi-arrow-clockwise"></i> Tải lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng người dùng -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle text-center">
+                <thead class="table-dark">
+                <tr>
+
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Quyền</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="user in users">
+
+                    <td>{{user.username}}</td>
+                    <td>{{user.email}}</td>
+                    <td>
+                        <select class="form-select form-select-sm w-auto mx-auto"
+                                ng-model="user.role"
+                                ng-change="updateRole(user)">
+                            <option value="USER">USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="STAFF">STAFF</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm"
+                                ng-click="deleteUser(user.id)">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>
+                <tr ng-if="users.length === 0">
+                    <td colspan="5" class="text-muted py-3">
+                        Không tìm thấy người dùng nào.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
