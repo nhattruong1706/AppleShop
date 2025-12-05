@@ -100,4 +100,26 @@ public class AddressController {
         addressService.deleteAddress(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/default")
+    public ResponseEntity<Address> getDefaultAddress() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Lấy địa chỉ mặc định
+        Address defaultAddress = addressService.getAddressesByUser(user.getId())
+                .stream()
+                .filter(Address::getIsDefault)
+                .findFirst()
+                .orElse(null);
+
+        if (defaultAddress == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(defaultAddress);
+    }
+
 }

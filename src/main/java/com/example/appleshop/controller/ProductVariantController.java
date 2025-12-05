@@ -7,6 +7,7 @@ import com.example.appleshop.repository.ProductRepository;
 import com.example.appleshop.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public class ProductVariantController {
     }
 
     // ✅ Thêm biến thể mới
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<?> createVariant(
             @RequestParam Long productId,
@@ -80,6 +82,7 @@ public class ProductVariantController {
     }
 
     // ✅ Cập nhật biến thể
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateVariant(@PathVariable Long id, @RequestBody ProductVariant variant) {
         return variantRepository.findById(id).map(v -> {
@@ -100,6 +103,7 @@ public class ProductVariantController {
     }
 
     // ✅ Xóa biến thể
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVariant(@PathVariable Long id) {
         if (!variantRepository.existsById(id)) {
@@ -108,4 +112,17 @@ public class ProductVariantController {
         variantRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+    // ⭐ Lấy giá thấp nhất của biến thể theo productId
+    @GetMapping("/min-price/{productId}")
+    public ResponseEntity<Double> getMinPrice(@PathVariable Long productId) {
+
+        Double minPrice = variantRepository.findMinPriceByProductId(productId);
+
+        if (minPrice == null) {
+            minPrice = 0.0;
+        }
+
+        return ResponseEntity.ok(minPrice);
+    }
+
 }

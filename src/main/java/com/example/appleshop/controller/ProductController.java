@@ -9,6 +9,7 @@ import com.example.appleshop.service.CategoryService;
 import com.example.appleshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ProductController {
     private final CategoryService categoryService;
     private final CategoryRepository  categoryRepository;
     // 🔹 Thêm sản phẩm (không kèm biến thể)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody Map<String, Object> body) {
         try {
@@ -66,6 +68,7 @@ public class ProductController {
     }
 
     // 🔹 Cập nhật sản phẩm
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
@@ -79,6 +82,7 @@ public class ProductController {
     }
 
     // 🔹 Xóa sản phẩm
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         try {
@@ -94,6 +98,7 @@ public class ProductController {
     // =====================================================
 
     // 🆕 Thêm biến thể cho sản phẩm theo productId
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/{productId}/variants")
     public ResponseEntity<?> addVariantToProduct(
             @PathVariable Long productId,
@@ -118,6 +123,7 @@ public class ProductController {
     }
 
     // 🔹 Cập nhật biến thể
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/variants/{variantId}")
     public ResponseEntity<?> updateVariant(
             @PathVariable Long variantId,
@@ -131,6 +137,7 @@ public class ProductController {
     }
 
     // 🔹 Xóa biến thể
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/variants/{variantId}")
     public ResponseEntity<?> deleteVariant(@PathVariable Long variantId) {
         try {
@@ -140,4 +147,11 @@ public class ProductController {
             return ResponseEntity.badRequest().body("Lỗi khi xóa biến thể: " + e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam("name") String name) {
+        List<Product> results = productService.searchProductsByName(name);
+        return ResponseEntity.ok(results);
+    }
+
+
 }

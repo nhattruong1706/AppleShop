@@ -86,4 +86,17 @@ public class ProductService {
         }
         variantRepository.deleteById(variantId);
     }
+    public List<Product> searchProductsByName(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
+    // =========================
+// 🔹 Lấy giá MIN theo productId
+// =========================
+    public Double getMinPriceByProductId(Long productId) {
+        Double min = variantRepository.findMinPriceByProductId(productId);
+        return min != null ? min : 0.0;
+    }
+
+
+
 }

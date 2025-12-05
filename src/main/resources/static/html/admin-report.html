@@ -1,0 +1,113 @@
+<div class="container" ng-controller="ReportController">
+
+    <h2>📊 Thống kê doanh thu</h2>
+
+    <!-- Bộ lọc ngày -->
+    <div style="margin-bottom: 20px;">
+        <label>Từ ngày:</label>
+        <input type="date" ng-model="start">
+
+        <label>Đến ngày:</label>
+        <input type="date" ng-model="end">
+
+        <button ng-click="load()">Xem báo cáo</button>
+
+        <button ng-click="exportExcel()" style="margin-left: 10px; background: #34c759;">
+            Xuất Excel
+        </button>
+    </div>
+
+    <!-- Tổng doanh thu -->
+    <div class="total-box">
+        <b>Tổng doanh thu:</b> {{total | currency:"VND "}}
+    </div>
+
+    <!-- Biểu đồ sản phẩm -->
+    <div class="chart-wrapper">
+        <h3>📈 Doanh thu theo sản phẩm</h3>
+        <canvas id="productChart"></canvas>
+    </div>
+
+    <!-- Biểu đồ theo ngày -->
+    <div class="chart-wrapper" ng-if="dateItems && dateItems.length > 0">
+        <h3>📅 Doanh thu theo ngày</h3>
+        <canvas id="dateChart"></canvas>
+    </div>
+
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f7fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        width: 950px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 25px;
+        font-size: 28px;
+    }
+
+    label {
+        font-weight: bold;
+        margin-right: 8px;
+    }
+
+    input[type="date"] {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-right: 15px;
+        outline: none;
+    }
+
+    button {
+        background: #4a90e2;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.25s;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #357ab8;
+    }
+
+    .chart-wrapper {
+        margin-top: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    }
+
+    .chart-wrapper h3 {
+        margin-bottom: 10px;
+        color: #444;
+    }
+
+    .total-box {
+        margin-top: 15px;
+        font-size: 18px;
+        background: #fff7d6;
+        padding: 10px 15px;
+        border-left: 5px solid #ffc107;
+        border-radius: 8px;
+        display: inline-block;
+    }
+</style>

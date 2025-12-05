@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi" ng-app="appleShopApp" ng-controller="ProductDetailController as vm">
 <head>
@@ -303,6 +304,152 @@
 <div class="text-center mt-5" ng-if="!vm.product">
     <p style="color:#777; font-size:1rem;">Đang tải dữ liệu sản phẩm...</p>
 </div>
+<!-- ===================== BẢNG ĐÁNH GIÁ SẢN PHẨM ===================== -->
+<div class="mt-5 p-4" style="max-width:900px; margin:0 auto; background:white; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+    <h4 style="font-weight:700; color:#111; margin-bottom:20px;">⭐ Đánh giá sản phẩm</h4>
+
+    <!-- Nếu không có review -->
+    <div ng-if="vm.reviews.meta.total === 0" class="text-center mt-3">
+        <p style="color:#777; font-size:15px;">Chưa có đánh giá nào cho sản phẩm này.</p>
+    </div>
+
+    <!-- Nếu có review -->
+    <div ng-if="vm.reviews.meta.total > 0" class="row">
+
+        <!-- Cột tổng quan -->
+        <div class="col-md-4 text-center" style="border-right:1px solid #e5e7eb;">
+            <h1 style="font-size:48px; font-weight:700; color:#eab308; margin:0;">
+                {{vm.reviews.meta.average | number : 1}}
+            </h1>
+            <div style="color:#eab308; font-size:20px;">
+                ★★★★★
+            </div>
+            <p style="margin-top:10px; color:#555;">{{vm.reviews.meta.total}} lượt đánh giá</p>
+
+            <!-- Phân bố số sao -->
+            <div style="margin-top:15px;">
+                <div ng-repeat="n in [5,4,3,2,1]" style="display:flex; justify-content:center; gap:10px; color:#444;">
+                    <span style="width:40px; text-align:right;">{{n}} ⭐</span>
+                    <div style="width:120px; background:#e5e7eb; border-radius:4px;">
+                        <div style="height:6px; background:#facc15; border-radius:4px;"
+                             ng-style="{'width': (vm.reviews.meta.distribution[n] / vm.reviews.meta.total * 100) + '%'}">
+                        </div>
+                    </div>
+                    <span>({{vm.reviews.meta.distribution[n]}})</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột danh sách review -->
+        <div class="col-md-8 mt-3">
+
+            <div class="card mb-3"
+                 ng-repeat="rv in vm.reviews.reviews"
+                 style="border-radius:12px; border:none; box-shadow:0 1px 5px rgba(0,0,0,0.08);">
+
+                <div class="card-body">
+                    <h6 style="font-weight:600; margin-bottom:5px;">Người mua</h6>
+
+                    <!-- Sao -->
+                    <div style="color:#fbbf24; font-size:18px; margin-bottom:8px;">
+                        {{'★'.repeat(rv.rating)}}{{'☆'.repeat(5 - rv.rating)}}
+                    </div>
+
+                    <!-- Bình luận -->
+                    <p style="margin-bottom:10px; color:#333;">{{rv.comment}}</p>
+
+                    <!-- Ảnh review (nếu có) -->
+                    <div ng-if="rv.img" style="margin-bottom:10px;">
+                        <img ng-src="{{rv.img}}"
+                             style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+                    </div>
+
+                    <small style="color:#888;">{{rv.createdAt | date:'dd/MM/yyyy HH:mm'}}</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<footer class="mt-5 py-5" style="background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.08);">
+    <div class="site-container">
+        <div class="row g-5">
+
+            <!-- Cột 1: Logo + mô tả ngắn -->
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <img src="/img/logo.png" alt="AppleShop" style="height:48px; filter: brightness(0) invert(1);">
+                    <h4 class="mb-0 text-white">AppleShop</h4>
+                </div>
+                <p class="text-slate-400 small lh-lg">
+                    Chuyên phụ kiện & thiết bị Apple chính hãng<br>
+                    AirPods · iPhone · iPad · MacBook · Apple Watch...
+                </p>
+                <div class="d-flex gap-3 mt-3">
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Cột 2: Hỗ trợ khách hàng -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="mb-3 opacity-90">Hỗ trợ khách hàng</h6>
+                <ul class="list-unstyled small opacity-75" style="line-height:2.1;">
+                    <li>Chính sách bảo hành</li>
+                    <li>Chính sách vận chuyển</li>
+                    <li>Đổi trả & hoàn tiền</li>
+                    <li>Cam kết chính hãng</li>
+                    <li>Liên hệ & góp ý</li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Về AppleShop -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="mb-3 opacity-90">Về AppleShop</h6>
+                <ul class="list-unstyled small opacity-75" style="line-height:2.1;">
+                    <li>Giới thiệu</li>
+                    <li>Tuyển dụng</li>
+                    <li>Tin tức & ưu đãi</li>
+                    <li>Hệ thống cửa hàng</li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Liên hệ & hotline -->
+            <div class="col-lg-4 col-md-6">
+                <h6 class="text-white fw-bold mb-3">Hotline miễn phí</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-full w-12 h-12 d-flex align-items-center justify-content-center fw-bold">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sky-400 text-2xl fw-bold">0868552631</div>
+                        <small class="text-slate-400">(8h30 - 21h30 hàng ngày)</small>
+                    </div>
+                </div>
+
+                <p class="small text-slate-400 mb-2">
+                    <i class="fas fa-envelope me-2"></i> support@appleshop.vn
+                </p>
+                <p class="small text-slate-400">
+                    <i class="fas fa-map-marker-alt me-2"></i> 123 Nguyễn Trãi, Q.5, TP.HCM
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Dòng copyright dưới cùng -->
+        <hr class="my-4 border-slate-700">
+        <div class="text-center small text-slate-500">
+            © 2025 AppleShop.vn – Phụ kiện Apple chính hãng.
+        </div>
+    </div>
+</footer>
 
 <script>
     const app = angular.module("appleShopApp", []);
@@ -395,6 +542,22 @@
                 .then(() => alert("✅ Đã thêm vào giỏ hàng!"))
                 .catch(() => alert("❌ Lỗi khi thêm vào giỏ hàng!"));
         };
+
+        /* ====================== REVIEW API THÊM VÀO ====================== */
+
+        vm.reviews = {
+            meta: { average: 0, total: 0, distribution: {} },
+            reviews: []
+        };
+
+        vm.loadReviews = function () {
+            $http.get(`/api/reviews/product/${productId}`)
+                .then(res => vm.reviews = res.data)
+                .catch(err => console.error("Lỗi load reviews:", err));
+        };
+
+        vm.loadReviews(); // Gọi khi load trang
+
     });
 
     app.filter('unique', function () {
@@ -407,5 +570,6 @@
         };
     });
 </script>
+
 </body>
 </html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Đánh giá sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .star { font-size: 1.6rem; cursor: pointer; }
+        .star.rated { color: #ffc107; }
+        .review-card { transition: box-shadow .18s ease; }
+        .review-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+        .avg-star { font-size: 2.6rem; color: #ffc107; }
+        .small-muted { color:#6c757d; font-size: .9rem; }
+        .review-img { max-width: 180px; display:block; margin-top:8px; border-radius:6px; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <!-- Thống kê -->
+            <div class="card p-3">
+                <div class="text-center">
+                    <div id="avgValue" class="avg-star">0.0</div>
+                    <div id="avgStars">★★★★★</div>
+                    <div class="small-muted" id="totalReviews">0 đánh giá</div>
+                </div>
+                <hr>
+                <div id="distribution"></div>
+            </div>
+
+            <!-- Form gửi đánh giá -->
+            <div class="card p-3 mt-3">
+                <h6>Gửi đánh giá</h6>
+                <div class="mb-2" id="starSelector">
+                    <span class="star" data-value="1">☆</span>
+                    <span class="star" data-value="2">☆</span>
+                    <span class="star" data-value="3">☆</span>
+                    <span class="star" data-value="4">☆</span>
+                    <span class="star" data-value="5">☆</span>
+                </div>
+                <textarea id="comment" class="form-control mb-2" placeholder="Viết cảm nhận..." rows="3"></textarea>
+                <input id="imageFile" type="file" class="form-control mb-2" accept="image/*">
+                <button id="sendBtn" class="btn btn-primary w-100">Gửi đánh giá</button>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div id="reviewList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const variantId = params.get("variantId");
+
+    if (!variantId) {
+        alert("Thiếu variantId!");
+        throw new Error("Missing variantId");
+    }
+
+
+
+    // Star UI
+    let selectedStars = 5;
+    const starEls = document.querySelectorAll('#starSelector .star');
+    function updateStarUI(n){
+        starEls.forEach(s => {
+            const val = Number(s.dataset.value);
+            s.textContent = val <= n ? '★' : '☆';
+            s.classList.toggle('rated', val <= n);
+        });
+    }
+    starEls.forEach(s => {
+        s.addEventListener('click', () => { selectedStars = +s.dataset.value; updateStarUI(selectedStars); });
+        s.addEventListener('mouseover', () => updateStarUI(+s.dataset.value));
+        s.addEventListener('mouseout', () => updateStarUI(selectedStars));
+    });
+    updateStarUI(selectedStars);
+
+    function safeDate(d) {
+        if (!d) return '';
+        try {
+            const dt = new Date(d);
+            if (isNaN(dt)) return '';
+            return dt.toLocaleString('vi-VN');
+        } catch(e){ return ''; }
+    }
+
+    // Load danh sách review
+    async function loadReviews() {
+        try {
+            const res = await fetch(`/api/reviews?variantId=${variantId}`);
+            if (!res.ok) throw new Error('Lỗi khi tải reviews');
+            const data = await res.json();
+            const meta = data.meta || {};
+            const reviews = data.reviews || [];
+
+            // Cập nhật thống kê
+            document.getElementById('avgValue').textContent = meta.average ? Number(meta.average).toFixed(1) : '0.0';
+            document.getElementById('totalReviews').textContent = (meta.total || 0) + ' đánh giá';
+            const avgStars = Math.round(meta.average || 0);
+            document.getElementById('avgStars').textContent = '★'.repeat(avgStars) + '☆'.repeat(5 - avgStars);
+
+            // Phân bố sao
+            const distribution = meta.distribution || {};
+            let distHtml = '';
+            for(let s = 5; s >= 1; s--){
+                const count = distribution[s] ?? distribution[String(s)] ?? 0;
+                const percent = meta.total ? Math.round(count / meta.total * 100) : 0;
+                distHtml += `
+                <div class="mb-2 small-muted">
+                  <div class="d-flex align-items-center">
+                    <div style="width:56px">${s}★</div>
+                    <div class="progress flex-grow-1 mx-2" style="height:8px">
+                      <div class="progress-bar" role="progressbar" style="width:${percent}%"></div>
+                    </div>
+                    <div style="width:40px;text-align:right">${count}</div>
+                  </div>
+                </div>`;
+            }
+            document.getElementById('distribution').innerHTML = distHtml;
+
+            // Hiển thị danh sách review
+            const listEl = document.getElementById('reviewList');
+            listEl.innerHTML = reviews.map(r => {
+                const rating = Number(r.rating ?? 0);
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                const reviewImageHtml = r.img ? `<img src="${r.img}" class="review-img" onerror="this.src='/img/default.jpg'">` : '';
+                const contentText = r.comment || '';
+                const time = safeDate(r.createdAt);
+
+                return `
+<div class="card p-3 mb-3 review-card">
+  <div>
+    <div class="d-flex justify-content-between">
+      <div><strong>Người dùng</strong></div>
+      <div class="small-muted">${time}</div>
+    </div>
+    <div class="text-warning">${stars}</div>
+    <p class="mb-1">${contentText || 'Không có đánh giá'}</p>
+    ${reviewImageHtml}
+  </div>
+</div>`;
+            }).join('');
+
+        } catch(e){
+            console.error(e);
+            document.getElementById('reviewList').innerHTML = `<div class="text-danger p-3">Không tải được đánh giá.</div>`;
+        }
+    }
+
+    // Gửi review mới
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+        const fd = new FormData();
+        fd.append('variantId', variantId);
+        fd.append('rating', selectedStars);
+        fd.append('comment', document.getElementById('comment').value || '');
+        const file = document.getElementById('imageFile').files[0];
+        if(file) fd.append('image', file);
+
+        const btn = document.getElementById('sendBtn');
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/reviews', { method:'POST', body: fd });
+            if(res.ok){
+                document.getElementById('comment').value = '';
+                document.getElementById('imageFile').value = '';
+                updateStarUI(5); selectedStars=5;
+                await loadReviews();
+            } else {
+                const txt = await res.text();
+                alert('Gửi thất bại: ' + (txt || res.status));
+            }
+        } catch(e){
+            console.error(e);
+            alert('Lỗi mạng');
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+
+    // Initial load
+    loadReviews();
+</script>
+</body>
+</html>

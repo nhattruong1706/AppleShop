@@ -3,8 +3,10 @@ package com.example.appleshop.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -46,5 +48,9 @@ public class OrderEntity {
     // Liên kết 1-nhiều với payments
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<PaymentEntity> payments;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDate createdAt;
+
 
 }

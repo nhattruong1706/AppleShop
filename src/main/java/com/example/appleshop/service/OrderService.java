@@ -1,3 +1,4 @@
+
 package com.example.appleshop.service;
 
 import com.example.appleshop.entity.*;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -195,4 +197,36 @@ public class OrderService {
         List<OrderEntity> cancelledOrders = orderRepository.findByStatus("CANCELLED");
         orderRepository.deleteAll(cancelledOrders);
     }
+    public boolean hasPurchased(UserEntity user, Long variantId) {
+        List<OrderEntity> orders = orderRepository.findByUser(user);
+
+        System.out.println(">>> Kiểm tra user = " + user.getUsername());
+        System.out.println(">>> variantId nhận vào = " + variantId);
+
+        for (OrderEntity order : orders) {
+
+            System.out.println(">>> OrderId = " + order.getId() + ", status = " + order.getStatus());
+
+            if (!"SUCCESS".equalsIgnoreCase(order.getStatus())) continue;
+
+            for (OrderItemEntity item : order.getItems()) {
+
+                Long vId = item.getVariant() != null ? item.getVariant().getId() : null;
+                Long pId = item.getVariant() != null ? item.getVariant().getProduct().getId() : null;
+
+                System.out.println("    - Order item variantId = " + vId + " | productId = " + pId);
+
+                // So sánh theo variantId
+                if (Objects.equals(vId, variantId)) {
+                    System.out.println(">>> MATCHED variantId");
+                    return true;
+                }
+            }
+        }
+
+        System.out.println(">>> KHÔNG TÌM THẤY trong đơn hàng");
+        return false;
+    }
+
+
 }

@@ -214,6 +214,25 @@
                     </p>
                     <hr>
                     <h6>Danh sách sản phẩm:</h6>
+                    <!--                    <table class="table table-sm table-striped text-center">-->
+                    <!--                        <thead>-->
+                    <!--                        <tr>-->
+                    <!--                            <th>Tên sản phẩm</th>-->
+                    <!--                            <th>Số lượng</th>-->
+                    <!--                            <th>Giá</th>-->
+                    <!--                            <th>Tổng</th>-->
+                    <!--                        </tr>-->
+                    <!--                        </thead>-->
+                    <!--                        <tbody>-->
+                    <!--                        <tr ng-repeat="item in vm.selectedOrder.items">-->
+                    <!--                            <td>{{item.variantName}}</td>-->
+                    <!--                            <td>{{item.qty}}</td>-->
+                    <!--                            <td>{{item.price | currency:'₫':0}}</td>-->
+                    <!--                            <td>{{item.qty * item.price | currency:'₫':0}}</td>-->
+                    <!--                        </tr>-->
+                    <!--                        </tbody>-->
+                    <!--                    </table>-->
+
                     <table class="table table-sm table-striped text-center">
                         <thead>
                         <tr>
@@ -221,6 +240,7 @@
                             <th>Số lượng</th>
                             <th>Giá</th>
                             <th>Tổng</th>
+                            <th>Đánh giá</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -229,9 +249,25 @@
                             <td>{{item.qty}}</td>
                             <td>{{item.price | currency:'₫':0}}</td>
                             <td>{{item.qty * item.price | currency:'₫':0}}</td>
+
+                            <td>
+                                <!-- ⭐ Chỉ hiện nút khi đơn đã hoàn thành -->
+                                <button class="btn btn-warning btn-sm"
+                                        ng-if="vm.selectedOrder.status === 'SUCCESS'"
+                                        ng-click="vm.goReview(item)">
+                                    ⭐ Đánh giá
+                                </button>
+
+                                <span class="text-muted"
+                                      ng-if="vm.selectedOrder.status !== 'SUCCESS'">
+                Chờ giao
+            </span>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
+
+
                     <div class="text-end fw-bold mt-3 total-amount">
                         Tổng cộng: {{vm.selectedOrder.totalAmount | currency:'₫':0}}
                     </div>
@@ -251,17 +287,19 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     angular.module('appleShopApp', [])
-        .controller('UserOrderController', ['$http', function($http) {
+        .controller('UserOrderController', ['$http', '$scope', function($http, $scope) {
             const vm = this;
             vm.orders = [];
             vm.selectedOrder = null;
 
+            // ===== Load danh sách đơn hàng =====
             vm.loadOrders = function() {
                 $http.get('http://localhost:8080/api/orders')
                     .then(resp => vm.orders = resp.data)
                     .catch(err => vm.showToast('❌ Lỗi khi tải đơn hàng!', 'error'));
             };
 
+            // ===== Xem chi tiết đơn hàng =====
             vm.viewDetails = function(order) {
                 $http.get(`http://localhost:8080/api/orders/${order.id}/variants`)
                     .then(resp => {
@@ -278,6 +316,7 @@
                     .catch(err => vm.showToast('❌ Lỗi khi tải chi tiết đơn hàng!', 'error'));
             };
 
+            // ===== Hủy đơn hàng =====
             vm.cancelOrder = function(order) {
                 if (order.status !== 'PENDING') {
                     vm.showToast('❌ Không thể hủy đơn hàng đã xác nhận hoặc đang giao.', 'error');
@@ -296,9 +335,23 @@
                     .catch(err => vm.showToast('❌ Lỗi khi hủy đơn hàng!', 'error'));
             };
 
-            // Toast notification
+            // ===== Chuyển sang đánh giá sản phẩm =====
+            vm.goReview = function(item) {
+                if (!item.variantId) {
+                    vm.showToast("❌ Thiếu thông tin sản phẩm để đánh giá!", "error");
+                    return;
+                }
+
+                window.location.href =
+                    `/html/reviews.html?variantId=${item.variantId}`;
+            };
+
+
+            // ===== Toast thông báo =====
             vm.showToast = function(message, type='info') {
                 const container = document.getElementById('toastContainer');
+                if (!container) return;
+
                 const toastEl = document.createElement('div');
                 toastEl.className = 'toast align-items-center text-white border-0';
                 toastEl.setAttribute('role', 'alert');
@@ -307,18 +360,26 @@
                 toastEl.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
+
                 container.appendChild(toastEl);
                 const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
                 bsToast.show();
                 toastEl.addEventListener('hidden.bs.toast', () => container.removeChild(toastEl));
             };
 
+            // ===== Khởi tạo =====
             vm.loadOrders();
         }]);
+
 </script>
+
+
+
 <script src="/js/header.js"></script>
 </body>
 </html>
+

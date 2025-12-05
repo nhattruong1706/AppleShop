@@ -12,7 +12,26 @@
         .hero { display:flex; gap:30px; align-items:center; margin-bottom:30px; flex-wrap:wrap; }
         .hero-card { flex:1; background: linear-gradient(135deg,#0b1220, #0b2b4a); border-radius:18px; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.6); }
         .hero-card h1 { font-size:2.4rem; margin-bottom:10px; color:#fff; }
-        .search-input { max-width:420px; }
+        .search-input { max-width:420px; position: relative; }
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #0b1220;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .search-suggestions li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .search-suggestions li:hover {
+            background: #111827;
+        }
         .product-card { background: rgba(255,255,255,0.03); border-radius:12px; padding:16px; transition: transform .18s, box-shadow .18s; }
         .product-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(2,6,23,0.7); }
         .product-img { height:220px; width:100%; object-fit:contain; border-radius:10px; background-color:#0f1724; padding:10px; transition: transform .3s ease; }
@@ -41,11 +60,17 @@
 
             <!-- Search + User + Cart -->
             <div class="d-flex align-items-center gap-3">
-                <div>
+                <div class="position-relative">
                     <input type="text" class="form-control search-input"
                            ng-model="vm.query"
-                           ng-change="vm.debouncedFilter()"
+                           ng-change="vm.searchProducts()"
                            placeholder="Tìm kiếm: AirPods, case, sạc..." />
+
+                    <ul class="search-suggestions list-unstyled" ng-if="vm.suggestions.length">
+                        <li ng-repeat="p in vm.suggestions" ng-click="vm.goToProduct(p)">
+                            {{p.name}}
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- User dropdown -->
@@ -105,11 +130,9 @@
         </button>
     </div>
 
-
-
+    <!-- Categories -->
     <div class="mb-3">
         <div class="d-flex gap-2 flex-wrap">
-            <!-- Tất cả -->
             <button type="button"
                     class="btn btn-sm"
                     ng-class="{'btn-info': vm.selectedCat==null, 'btn-outline-light': vm.selectedCat!=null}"
@@ -117,7 +140,6 @@
                 Tất cả
             </button>
 
-            <!-- Các category -->
             <button type="button"
                     class="btn btn-sm"
                     ng-repeat="c in vm.categories"
@@ -140,7 +162,11 @@
                 <h5 style="color:#e6eef7;">{{p.name}}</h5>
 
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="price">{{p.price | number:0}}₫</div>
+                <span class="text-info fw-bold" style="color: red">
+    {{ p.minPrice > 0 ? (p.minPrice | number:0) + ' đ' : 'Không có giá' }}
+</span>
+
+
                     <div>
                         <button class="btn btn-sm btn-outline-light me-2" ng-click="vm.viewProduct(p)">Chi tiết</button>
                         <button class="btn btn-sm btn-apple"
@@ -178,8 +204,84 @@
     </div>
 
 </div> <!-- site-container -->
+<footer class="mt-5 py-5" style="background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.08);">
+    <div class="site-container">
+        <div class="row g-5">
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Cột 1: Logo + mô tả ngắn -->
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <img src="/img/logo.png" alt="AppleShop" style="height:48px; filter: brightness(0) invert(1);">
+                    <h4 class="mb-0 text-white">AppleShop</h4>
+                </div>
+                <p class="text-slate-400 small lh-lg">
+                    Chuyên phụ kiện & thiết bị Apple chính hãng<br>
+                    AirPods · iPhone · iPad · MacBook · Apple Watch...
+                </p>
+                <div class="d-flex gap-3 mt-3">
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white opacity-75 hover:opacity-100"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Cột 2: Hỗ trợ khách hàng -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="mb-3 opacity-90">Hỗ trợ khách hàng</h6>
+                <ul class="list-unstyled small opacity-75" style="line-height:2.1;">
+                    <li>Chính sách bảo hành</li>
+                    <li>Chính sách vận chuyển</li>
+                    <li>Đổi trả & hoàn tiền</li>
+                    <li>Cam kết chính hãng</li>
+                    <li>Liên hệ & góp ý</li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Về AppleShop -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="mb-3 opacity-90">Về AppleShop</h6>
+                <ul class="list-unstyled small opacity-75" style="line-height:2.1;">
+                    <li>Giới thiệu</li>
+                    <li>Tuyển dụng</li>
+                    <li>Tin tức & ưu đãi</li>
+                    <li>Hệ thống cửa hàng</li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Liên hệ & hotline -->
+            <div class="col-lg-4 col-md-6">
+                <h6 class="text-white fw-bold mb-3">Hotline miễn phí</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-full w-12 h-12 d-flex align-items-center justify-content-center fw-bold">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sky-400 text-2xl fw-bold">0868552631</div>
+                        <small class="text-slate-400">(8h30 - 21h30 hàng ngày)</small>
+                    </div>
+                </div>
+
+                <p class="small text-slate-400 mb-2">
+                    <i class="fas fa-envelope me-2"></i> support@appleshop.vn
+                </p>
+                <p class="small text-slate-400">
+                    <i class="fas fa-map-marker-alt me-2"></i> 123 Nguyễn Trãi, Q.5, TP.HCM
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Dòng copyright dưới cùng -->
+        <hr class="my-4 border-slate-700">
+        <div class="text-center small text-slate-500">
+            © 2025 AppleShop.vn – Phụ kiện Apple chính hãng.
+        </div>
+    </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     angular.module('appleShopApp', [])
@@ -189,6 +291,7 @@
             vm.products = [];
             vm.filtered = [];
             vm.query = '';
+            vm.suggestions = [];
             vm.currentUser = null;
             vm.currentPage = 1;
             vm.itemsPerPage = 9;
@@ -201,27 +304,23 @@
                 vm.loadCategories();
             };
 
-            // 📦 Load danh mục
             vm.loadCategories = () => {
                 $http.get('/api/categories')
                     .then(resp => vm.categories = resp.data)
                     .catch(() => vm.categories = []);
             };
 
-            // 📦 Chọn danh mục
             vm.selectCategory = id => {
                 vm.selectedCat = id;
                 vm.filterNow();
             };
 
-            // 👤 Load thông tin user
             vm.loadUser = function() {
                 $http.get('/api/auth/me', {withCredentials: true})
                     .then(resp => vm.currentUser = resp.data)
                     .catch(() => vm.currentUser = null);
             };
 
-            // 🚪 Logout
             vm.logout = function() {
                 $http.post('/api/auth/logout', {}, {withCredentials: true})
                     .then(() => {
@@ -230,53 +329,93 @@
                     });
             };
 
-            // 🛒 Load sản phẩm
+            // ======================================================
+            // HÀM MỚI: LẤY GIÁ MIN TỪ BACKEND CHO MỖI SẢN PHẨM
+            // ======================================================
+            vm.loadMinPrices = async function() {
+                for (let p of vm.products) {
+                    try {
+                        const res = await $http.get(`/api/variants/min-price/${p.id}`);
+                        p.minPrice = res.data;  // backend chắc chắn trả về Double
+                    } catch (e) {
+                        p.minPrice = 0;
+                    }
+                }
+            };
+
+            // ============================
+            // LOAD SẢN PHẨM
+            // ============================
             vm.loadProducts = () => {
                 $http.get('/api/products')
-                    .then(resp => {
+                    .then(async resp => {
                         vm.products = resp.data;
+
                         vm.filtered = vm.products.slice();
+
+                        // ============================
+                        // THÊM: GỌI HÀM LẤY GIÁ MIN
+                        // ============================
+                        vm.loadMinPrices();
                     });
             };
 
-            // ⏳ Debounce tìm kiếm
+            // ===============================
+            // Tìm kiếm với gợi ý xổ xuống
+            // ===============================
+            vm.searchProducts = function() {
+                if(searchTimeout) $timeout.cancel(searchTimeout);
+                searchTimeout = $timeout(() => {
+                    const q = vm.query ? vm.query.toLowerCase() : '';
+                    if(!q){
+                        vm.suggestions = [];
+                        return;
+                    }
+                    vm.suggestions = vm.products.filter(p =>
+                        p.name?.toLowerCase().includes(q)
+                    ).slice(0,10);
+                }, 200);
+            };
+
+            vm.goToProduct = function(p) {
+                $window.location.href = "/html/product-detail.html?id=" + p.id;
+            };
+
             vm.debouncedFilter = function() {
                 if (searchTimeout) $timeout.cancel(searchTimeout);
                 searchTimeout = $timeout(vm.filterNow, 300);
             };
 
-            // 🔍 Lọc sản phẩm theo từ khóa và danh mục
+            // =========================================
+            // Lọc sản phẩm theo text + category
+            // =========================================
             vm.filterNow = function() {
                 const q = vm.query ? vm.query.toLowerCase() : '';
-
                 vm.filtered = vm.products.filter(p => {
                     const matchText =
                         !q || (p.name?.toLowerCase().includes(q)) || (p.description?.toLowerCase().includes(q));
-
                     const matchCategory =
                         !vm.selectedCat || p.category?.id === vm.selectedCat;
-
                     return matchText && matchCategory;
                 });
-
                 vm.currentPage = 1;
             };
 
-            // 🛒 Thêm giỏ hàng
+            // =========================================
+            // Giỏ hàng
+            // =========================================
             vm.addToCart = function(p) {
-                if (!vm.currentUser) return alert('Vui lòng đăng nhập trước.');
-                $http.post('/api/cart/add', null, {
-                    params: { variantId: p.id, qty: 1 },
-                    withCredentials: true
-                }).then(() => alert('✅ Đã thêm sản phẩm vào giỏ hàng!'));
+                if(!vm.currentUser) return alert('Vui lòng đăng nhập trước.');
+                alert("Vui lòng chọn phiên bản sản phẩm trong trang chi tiết!");
             };
 
-            // 👀 Xem chi tiết
             vm.viewProduct = function(p) {
                 $window.location.href = "/html/product-detail.html?id=" + p.id;
             };
 
-            // 📄 Phân trang
+            // =========================================
+            // Phân trang
+            // =========================================
             vm.totalPages = function() {
                 return Math.ceil(vm.filtered.length / vm.itemsPerPage) || 1;
             };
@@ -287,13 +426,14 @@
             };
 
             vm.goToPage = function(page) {
-                if (page >= 1 && page <= vm.totalPages()) vm.currentPage = page;
+                if(page >= 1 && page <= vm.totalPages()) vm.currentPage = page;
             };
 
             vm.init();
         }]);
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+
 </body>
 </html>

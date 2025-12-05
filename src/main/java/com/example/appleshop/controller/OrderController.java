@@ -1,3 +1,4 @@
+
 package com.example.appleshop.controller;
 
 import com.example.appleshop.entity.OrderEntity;
@@ -9,6 +10,7 @@ import com.example.appleshop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +79,7 @@ public class OrderController {
     }
 
     // 🔹 Cập nhật trạng thái đơn hàng
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_STAFF')")
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Long id,
@@ -99,6 +102,7 @@ public class OrderController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/cancelled")
     public ResponseEntity<?> deleteAllCancelledOrders() {
         try {

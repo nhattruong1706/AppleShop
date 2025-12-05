@@ -4,6 +4,7 @@ import com.example.appleshop.entity.Category;
 import com.example.appleshop.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +31,14 @@ public class CategoryController {
     }
 
     // POST tạo category mới
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public Category createCategory(@RequestBody Category category) {
         return categoryService.createCategory(category);
     }
 
     // PUT cập nhật category
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category categoryDetails) {
         try {
@@ -47,6 +50,7 @@ public class CategoryController {
     }
 
     // DELETE category
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
         try {
