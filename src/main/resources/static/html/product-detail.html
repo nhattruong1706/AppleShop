@@ -534,13 +534,28 @@
         };
 
         vm.addToCart = function () {
+
+            // 1. Kiểm tra đăng nhập trước
+            if (!vm.currentUser || !vm.currentUser.username) {
+                alert("❗ Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                window.location.href = "/login.html";  // đổi theo đường dẫn login của bạn
+                return;
+            }
+
+            // 2. Kiểm tra đã chọn màu/dung lượng chưa
             if (!vm.selectedVariantId) {
                 alert("❗ Vui lòng chọn màu và dung lượng trước khi thêm vào giỏ hàng!");
                 return;
             }
+
+            // 3. Gửi request thêm vào giỏ
             $http.post(`/api/cart/add?variantId=${vm.selectedVariantId}&qty=${vm.qty}`)
-                .then(() => alert("✅ Đã thêm vào giỏ hàng!"))
-                .catch(() => alert("❌ Lỗi khi thêm vào giỏ hàng!"));
+                .then(() => {
+                    alert("✅ Đã thêm vào giỏ hàng!");
+                })
+                .catch(() => {
+                    alert("❌ Lỗi khi thêm vào giỏ hàng!");
+                });
         };
 
         /* ====================== REVIEW API THÊM VÀO ====================== */

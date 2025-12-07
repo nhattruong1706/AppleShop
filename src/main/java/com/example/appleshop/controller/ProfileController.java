@@ -65,22 +65,30 @@ public class ProfileController {
         )));
     }
 
-    // ✅ Đổi mật khẩu
+
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body) {
         return getCurrentUser().map(current -> {
             String oldPass = body.get("oldPassword");
             String newPass = body.get("newPassword");
+            String confirmPass = body.get("confirmPassword");
 
-            if (oldPass == null || newPass == null || oldPass.isEmpty() || newPass.isEmpty()) {
+            if (oldPass == null || newPass == null || confirmPass == null ||
+                    oldPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập đầy đủ thông tin!"));
             }
 
-            // 🔒 So sánh đúng cách với PasswordEncoder
+            // Kiểm tra mật khẩu cũ có đúng không?
             if (!passwordEncoder.matches(oldPass, current.getPasswordHash())) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Mật khẩu cũ không đúng!"));
             }
 
+            // Kiểm tra mật khẩu mới có trùng confirm không?
+            if (!newPass.equals(confirmPass)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Mật khẩu xác nhận không khớp!"));
+            }
+
+            // Cập nhật mật khẩu mới
             current.setPasswordHash(passwordEncoder.encode(newPass));
             userRepo.save(current);
 
@@ -89,5 +97,6 @@ public class ProfileController {
                 "error", "Chưa đăng nhập"
         )));
     }
+
 
 }

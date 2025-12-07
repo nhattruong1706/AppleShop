@@ -97,7 +97,7 @@
                 <!-- Cart -->
                 <div>
                     <a href="/html/cart.html" class="btn btn-outline-light">
-                        Giỏ hàng
+                        🛒Giỏ hàng
                     </a>
                 </div>
             </div>
@@ -163,17 +163,13 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                 <span class="text-info fw-bold" style="color: red">
-    {{ p.minPrice > 0 ? (p.minPrice | number:0) + ' đ' : 'Không có giá' }}
+    Giá chỉ từ {{ p.minPrice > 0 ? (p.minPrice | number:0) + ' đ' : 'Không có giá' }}
 </span>
 
 
                     <div>
                         <button class="btn btn-sm btn-outline-light me-2" ng-click="vm.viewProduct(p)">Chi tiết</button>
-                        <button class="btn btn-sm btn-apple"
-                                ng-click="vm.addToCart(p)"
-                                ng-disabled="p.stock<=0">
-                            {{ p.stock>0 ? 'Thêm vào giỏ' : 'Hết hàng' }}
-                        </button>
+
                     </div>
                 </div>
             </div>

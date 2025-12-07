@@ -7,6 +7,7 @@ import com.example.appleshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +50,7 @@ public class CartController {
     }
 
     // Thêm sản phẩm vào giỏ hàng (tăng)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_STAFF') or hasAnyAuthority('ROLE_USER')")
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(
             @RequestParam Long variantId,

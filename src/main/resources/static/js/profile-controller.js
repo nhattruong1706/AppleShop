@@ -1,56 +1,64 @@
 var app = angular.module("appleShopApp", []);
 
 app.config(['$httpProvider', function($httpProvider) {
-    // Cho phép gửi cookie/session đi kèm request
     $httpProvider.defaults.withCredentials = true;
 }]);
 
 app.controller("ProfileCtrl", function($scope, $http) {
     $scope.user = {};
     $scope.message = "";
+
+    // Khởi tạo dữ liệu mật khẩu
     $scope.passwordData = {
         oldPassword: "",
-        newPassword: ""
+        newPassword: "",
+        confirmPassword: ""
     };
+
+    // Thông báo mật khẩu
+    $scope.errorPwd = null;
+    $scope.messagePwd = null;
 
     // ================== LẤY THÔNG TIN NGƯỜI DÙNG HIỆN TẠI ==================
     $http.get("/api/profile").then(function(res) {
         $scope.user = res.data;
-        console.log("✅ User hiện tại:", $scope.user);
+        console.log("User hiện tại:", $scope.user);
     }, function(err) {
-        console.error("❌ Lỗi tải thông tin người dùng:", err);
+        console.error("Lỗi tải thông tin người dùng:", err);
         $scope.message = "Không thể tải thông tin người dùng!";
     });
 
-    // ================== CẬP NHẬT THÔNG TIN NGƯỜI DÙNG ==================
+    // ================== CẬP NHẬT HỒ SƠ ==================
     $scope.updateProfile = function() {
-        console.log("📤 Dữ liệu gửi đi:", $scope.user);
-
         $http.put("/api/profile", $scope.user)
             .then(function(res) {
-                console.log("✅ Server trả về:", res.data);
                 $scope.message = "Cập nhật hồ sơ thành công!";
             }, function(err) {
-                console.error("❌ Lỗi cập nhật thông tin:", err);
                 $scope.message = "Lỗi cập nhật hồ sơ!";
             });
     };
 
     // ================== ĐỔI MẬT KHẨU ==================
-    $scope.changePassword = function() {
-        if (!$scope.passwordData.oldPassword || !$scope.passwordData.newPassword) {
-            $scope.message = "⚠️ Vui lòng nhập đầy đủ thông tin!";
+    $scope.changePassword = function () {
+
+        // Kiểm tra khớp mật khẩu mới
+        if ($scope.passwordData.newPassword !== $scope.passwordData.confirmPassword) {
+            $scope.errorPwd = "Mật khẩu mới không trùng khớp với nhau!";
+            $scope.messagePwd = null;
             return;
         }
 
-        $http.put("/api/profile/change-password", $scope.passwordData)
-            .then(function(res) {
-                console.log("✅ Đổi mật khẩu:", res.data);
-                $scope.message = "Đổi mật khẩu thành công!";
-                $scope.passwordData = {};
-            }, function(err) {
-                console.error("❌ Lỗi đổi mật khẩu:", err);
-                $scope.message = "Lỗi khi đổi mật khẩu!";
-            });
+        $http.put("/api/profile/change-password", {
+            oldPassword: $scope.passwordData.oldPassword,
+            newPassword: $scope.passwordData.newPassword,
+            confirmPassword: $scope.passwordData.confirmPassword
+        }).then(res => {
+            $scope.messagePwd = res.data.message;
+            $scope.errorPwd = null;
+        }).catch(err => {
+            $scope.errorPwd = err.data.error;
+            $scope.messagePwd = null;
+        });
     };
+
 });

@@ -37,6 +37,8 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/products",
                                 "/api/categories",
+                                "/api/variants/find",
+                                "/api/variants/min-price/{productId}",
                                 "/api/auth/logout",
                                 "/api/auth/me",
                                 "/html/dangnhap.html",
